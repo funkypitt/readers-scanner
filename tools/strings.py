@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+"""Writes res/values*/strings.xml for the six languages from the table below."""
+import os
+from xml.sax.saxutils import escape
+
+LANGS = ["en", "fr", "de", "es", "pt", "ru"]
+S = {
+ "app_title": ["scanner", "scanner", "scanner", "escáner", "digitalizador", "сканер"],
+ "action_ok": ["ok"] * 5 + ["ок"],
+ "action_cancel": ["cancel", "annuler", "abbrechen", "cancelar", "cancelar", "отмена"],
+ "settings": ["settings", "réglages", "einstellungen", "ajustes", "definições", "настройки"],
+ "today": ["today", "aujourd'hui", "heute", "hoy", "hoje", "сегодня"],
+ "yesterday": ["yesterday", "hier", "gestern", "ayer", "ontem", "вчера"],
+ # home and folders
+ "all_scans": ["all scans", "tous les scans", "alle scans", "todos los escaneos", "todas as digitalizações", "все сканы"],
+ "all_scans_only": ["no folder (all scans only)", "aucun dossier (tous les scans seulement)", "kein ordner (nur alle scans)", "sin carpeta (solo todos los escaneos)", "sem pasta (só todas as digitalizações)", "без папки (только «все сканы»)"],
+ "new_scan": ["new scan", "nouveau scan", "neuer scan", "nuevo escaneo", "nova digitalização", "новый скан"],
+ "new_folder": ["new folder", "nouveau dossier", "neuer ordner", "nueva carpeta", "nova pasta", "новая папка"],
+ "new_folder_name": ["name of the new folder", "nom du nouveau dossier", "name des neuen ordners", "nombre de la nueva carpeta", "nome da nova pasta", "название новой папки"],
+ "rename": ["rename", "renommer", "umbenennen", "cambiar el nombre", "mudar o nome", "переименовать"],
+ "rename_hint": ["name (empty: the first words of the text)", "nom (vide : les premiers mots du texte)", "name (leer: die ersten wörter des textes)", "nombre (vacío: las primeras palabras del texto)", "nome (vazio: as primeiras palavras do texto)", "название (пусто — первые слова текста)"],
+ "delete_folder": ["delete the folder", "supprimer le dossier", "ordner löschen", "eliminar la carpeta", "eliminar a pasta", "удалить папку"],
+ "delete_folder_q": ["delete the folder « %1$s »? Its scans stay in all scans.", "supprimer le dossier « %1$s » ? Ses scans restent dans tous les scans.", "den ordner « %1$s » löschen? Seine scans bleiben in alle scans.", "¿eliminar la carpeta « %1$s »? Sus escaneos siguen en todos los escaneos.", "eliminar a pasta « %1$s »? As digitalizações ficam em todas as digitalizações.", "удалить папку « %1$s »? Её сканы останутся во «всех сканах»."],
+ "delete_folder_keep": ["delete the folder, keep the scans", "supprimer le dossier, garder les scans", "ordner löschen, scans behalten", "eliminar la carpeta, conservar los escaneos", "eliminar a pasta, manter as digitalizações", "удалить папку, сохранить сканы"],
+ "no_scans_yet": ["No scans here yet.", "Pas encore de scan ici.", "Hier noch keine scans.", "Todavía no hay escaneos aquí.", "Ainda não há digitalizações aqui.", "Здесь пока нет сканов."],
+ # capture
+ "text_in": ["text read in %1$s", "texte lu en %1$s", "text gelesen auf %1$s", "texto leído en %1$s", "texto lido em %1$s", "текст читается на языке: %1$s"],
+ "camera_needed": ["This screen needs the camera. Touch to allow it.", "Cet écran a besoin de l'appareil photo. Touchez pour l'autoriser.", "Dieser bildschirm braucht die kamera. Tippen, um sie zu erlauben.", "Esta pantalla necesita la cámara. Toque para permitirla.", "Este ecrã precisa da câmara. Toque para a permitir.", "Этому экрану нужна камера. Коснитесь, чтобы разрешить."],
+ "camera_failed": ["the camera did not answer — try again", "l'appareil photo n'a pas répondu — réessayez", "die kamera antwortet nicht — noch einmal versuchen", "la cámara no respondió — inténtelo de nuevo", "a câmara não respondeu — tente de novo", "камера не ответила — попробуйте ещё раз"],
+ "hold_page": ["hold the page in view, touch to take it", "cadrez la page, touchez pour la prendre", "seite ins bild halten, zum aufnehmen tippen", "encuadre la página, toque para tomarla", "enquadre a página, toque para a tirar", "наведите на страницу и коснитесь"],
+ "page_found": ["page found — touch or press a volume key", "page trouvée — touchez ou appuyez sur une touche de volume", "seite gefunden — tippen oder lautstärketaste drücken", "página encontrada — toque o pulse una tecla de volumen", "página encontrada — toque ou prima uma tecla de volume", "страница найдена — коснитесь или нажмите кнопку громкости"],
+ "import_photos": ["from photos", "depuis les photos", "aus fotos", "desde fotos", "das fotos", "из фото"],
+ "done": ["done", "terminé", "fertig", "listo", "concluído", "готово"],
+ # review
+ "page_n_of": ["page %1$d of %2$d", "page %1$d sur %2$d", "seite %1$d von %2$d", "página %1$d de %2$d", "página %1$d de %2$d", "страница %1$d из %2$d"],
+ "crop": ["crop", "recadrer", "zuschneiden", "recortar", "recortar", "обрезать"],
+ "turn": ["turn", "tourner", "drehen", "girar", "rodar", "повернуть"],
+ "filter_auto": ["clean", "net", "sauber", "limpio", "limpo", "чисто"],
+ "filter_grey": ["grey", "gris", "grau", "gris", "cinzento", "серый"],
+ "filter_bw": ["b & w", "n & b", "s/w", "b/n", "p/b", "ч/б"],
+ "filter_original": ["photo", "photo", "foto", "foto", "foto", "фото"],
+ "page": ["page", "page", "seite", "página", "página", "страница"],
+ "save": ["save", "enregistrer", "speichern", "guardar", "guardar", "сохранить"],
+ "working": ["working…", "en cours…", "läuft…", "en curso…", "a trabalhar…", "обработка…"],
+ "move_earlier": ["move earlier", "avancer", "nach vorne", "mover antes", "mover para antes", "переместить раньше"],
+ "move_later": ["move later", "reculer", "nach hinten", "mover después", "mover para depois", "переместить позже"],
+ "same_look_all": ["« %1$s » for every page", "« %1$s » pour toutes les pages", "« %1$s » für alle seiten", "« %1$s » para todas las páginas", "« %1$s » para todas as páginas", "« %1$s » для всех страниц"],
+ "retake": ["take this page again", "reprendre cette page", "diese seite neu aufnehmen", "volver a tomar esta página", "tirar esta página de novo", "переснять эту страницу"],
+ "delete_page": ["delete this page", "supprimer cette page", "diese seite löschen", "eliminar esta página", "eliminar esta página", "удалить эту страницу"],
+ "straightening": ["straightening…", "redressement…", "wird begradigt…", "enderezando…", "a endireitar…", "выравнивание…"],
+ "page_failed": ["this photo could not be read", "cette photo n'a pas pu être lue", "dieses foto war nicht lesbar", "no se pudo leer esta foto", "não foi possível ler esta foto", "не удалось прочитать это фото"],
+ "discard": ["discard", "abandonner", "verwerfen", "descartar", "descartar", "отменить"],
+ "discard_changes_q": ["discard these changes?", "abandonner ces modifications ?", "diese änderungen verwerfen?", "¿descartar estos cambios?", "descartar estas alterações?", "отменить эти изменения?"],
+ "keep_scanning": ["keep them", "les garder", "behalten", "conservarlas", "mantê-las", "оставить"],
+ # crop
+ "crop_hint": ["drag the corners onto the corners of the page", "faites glisser les coins sur ceux de la page", "ecken auf die ecken der seite ziehen", "arrastre las esquinas sobre las de la página", "arraste os cantos para os da página", "перетащите углы на углы страницы"],
+ "no_page_found": ["no page found in this photo — place the corners by hand", "aucune page trouvée sur cette photo — placez les coins à la main", "keine seite auf diesem foto gefunden — ecken von hand setzen", "no se encontró ninguna página — coloque las esquinas a mano", "nenhuma página encontrada — coloque os cantos à mão", "страница не найдена — расставьте углы вручную"],
+ "whole_photo": ["whole photo", "photo entière", "ganzes foto", "foto entera", "foto inteira", "всё фото"],
+ "find_page": ["find the page", "trouver la page", "seite finden", "buscar la página", "procurar a página", "найти страницу"],
+ "searching": ["searching…", "recherche…", "suche…", "buscando…", "a procurar…", "поиск…"],
+ # filing
+ "name_optional": ["name", "nom", "name", "nombre", "nome", "название"],
+ "name_placeholder": ["optional", "facultatif", "freiwillig", "opcional", "opcional", "необязательно"],
+ "name_hint": ["The file name starts with the date and hour. Without a name, the first words read on the page follow them.", "Le nom du fichier commence par la date et l'heure. Sans nom, les premiers mots lus sur la page les suivent.", "Der dateiname beginnt mit datum und uhrzeit. Ohne namen folgen die ersten auf der seite gelesenen wörter.", "El nombre del archivo empieza por la fecha y la hora. Sin nombre, les siguen las primeras palabras leídas en la página.", "O nome do ficheiro começa pela data e a hora. Sem nome, seguem-se as primeiras palavras lidas na página.", "Имя файла начинается с даты и часа. Без названия за ними следуют первые слова, прочитанные на странице."],
+ "file_in": ["file in", "ranger dans", "ablegen in", "guardar en", "guardar em", "положить в"],
+ # documents
+ "reading_text": ["reading the text %1$s", "lecture du texte %1$s", "text wird gelesen %1$s", "leyendo el texto %1$s", "a ler o texto %1$s", "чтение текста %1$s"],
+ "text_waiting": ["text to be read", "texte à lire", "text wird noch gelesen", "texto por leer", "texto por ler", "текст ещё не прочитан"],
+ "text_failed": ["text could not be read", "le texte n'a pas pu être lu", "text konnte nicht gelesen werden", "no se pudo leer el texto", "não foi possível ler o texto", "текст не удалось прочитать"],
+ "text_not_yet": ["The text has not been read yet.", "Le texte n'a pas encore été lu.", "Der text wurde noch nicht gelesen.", "El texto todavía no se ha leído.", "O texto ainda não foi lido.", "Текст ещё не прочитан."],
+ "no_text_found": ["No text was found on these pages.", "Aucun texte n'a été trouvé sur ces pages.", "Auf diesen seiten wurde kein text gefunden.", "No se encontró texto en estas páginas.", "Não foi encontrado texto nestas páginas.", "На этих страницах текст не найден."],
+ "share": ["share", "partager", "teilen", "compartir", "partilhar", "поделиться"],
+ "share_pdf": ["PDF", "PDF", "PDF", "PDF", "PDF", "PDF"],
+ "share_pdf_hint": ["the pages with their text, searchable", "les pages avec leur texte, cherchable", "die seiten mit ihrem text, durchsuchbar", "las páginas con su texto, buscable", "as páginas com o texto, pesquisável", "страницы с текстом, доступным для поиска"],
+ "share_pdfs_hint": ["one PDF per document, text searchable", "un PDF par document, texte cherchable", "ein PDF pro dokument, text durchsuchbar", "un PDF por documento, texto buscable", "um PDF por documento, texto pesquisável", "по одному PDF на документ, с поиском по тексту"],
+ "share_images": ["images", "images", "bilder", "imágenes", "imagens", "изображения"],
+ "share_text": ["text", "texte", "text", "texto", "texto", "текст"],
+ "share_text_hint": ["the words read on the pages", "les mots lus sur les pages", "die auf den seiten gelesenen wörter", "las palabras leídas en las páginas", "as palavras lidas nas páginas", "слова, прочитанные на страницах"],
+ "text_not_all_read": ["some text is not read yet", "une partie du texte n'est pas encore lue", "ein teil des textes ist noch nicht gelesen", "parte del texto aún no se ha leído", "parte do texto ainda não foi lida", "часть текста ещё не прочитана"],
+ "move": ["move", "déplacer", "verschieben", "mover", "mover", "переместить"],
+ "select_all": ["all", "tout", "alle", "todo", "tudo", "все"],
+ "select_none": ["none", "aucun", "keine", "ninguno", "nenhum", "ни одного"],
+ "open_with": ["open with…", "ouvrir avec…", "öffnen mit…", "abrir con…", "abrir com…", "открыть в…"],
+ "save_copy": ["save a copy of the pdf", "enregistrer une copie du pdf", "kopie des pdf speichern", "guardar una copia del pdf", "guardar uma cópia do pdf", "сохранить копию pdf"],
+ "move_to": ["move to a folder", "déplacer vers un dossier", "in einen ordner verschieben", "mover a una carpeta", "mover para uma pasta", "переместить в папку"],
+ "edit_pages": ["edit the pages", "modifier les pages", "seiten bearbeiten", "editar las páginas", "editar as páginas", "изменить страницы"],
+ "read_again": ["read the text again", "relire le texte", "text neu lesen", "volver a leer el texto", "ler o texto de novo", "прочитать текст заново"],
+ "read_again_in": ["read the text again in", "relire le texte en", "text neu lesen auf", "volver a leer el texto en", "ler o texto de novo em", "прочитать текст заново на языке"],
+ "delete": ["delete", "supprimer", "löschen", "eliminar", "eliminar", "удалить"],
+ "delete_doc_q": ["delete this document?", "supprimer ce document ?", "dieses dokument löschen?", "¿eliminar este documento?", "eliminar este documento?", "удалить этот документ?"],
+ "delete_for_good": ["delete for good", "supprimer définitivement", "endgültig löschen", "eliminar definitivamente", "eliminar definitivamente", "удалить навсегда"],
+ "text": ["text", "texte", "text", "texto", "texto", "текст"],
+ "pages": ["pages", "pages", "seiten", "páginas", "páginas", "страницы"],
+ # search
+ "search_hint": ["search names and text", "chercher dans les noms et le texte", "in namen und text suchen", "buscar en nombres y texto", "procurar nos nomes e no texto", "поиск по названиям и тексту"],
+ "nothing_found": ["nothing found", "rien trouvé", "nichts gefunden", "no se encontró nada", "nada encontrado", "ничего не найдено"],
+ # settings
+ "account_hint": ["A WebDAV folder receives a copy of every scan, as a searchable PDF, in a subfolder named after its folder here. kDrive: server https://ID.connect.kdrive.infomaniak.com (the ID is the number in the kDrive web address), your Infomaniak login, and an application password if two-factor authentication is on. Nextcloud and any WebDAV server work the same way. The phone keeps the originals.",
+                  "Un dossier WebDAV reçoit une copie de chaque scan, en PDF avec texte cherchable, dans un sous-dossier au nom de son dossier ici. kDrive : serveur https://ID.connect.kdrive.infomaniak.com (l'ID est le nombre dans l'adresse web de kDrive), votre identifiant Infomaniak et un mot de passe d'application si la double authentification est active. Nextcloud et tout serveur WebDAV fonctionnent de la même façon. Le téléphone garde les originaux.",
+                  "Ein WebDAV-Ordner erhält eine kopie jedes scans als durchsuchbares PDF, in einem unterordner mit dem namen seines ordners hier. kDrive: server https://ID.connect.kdrive.infomaniak.com (die ID ist die zahl in der kDrive-webadresse), Ihr Infomaniak-login und bei zwei-faktor-anmeldung ein app-passwort. Nextcloud und jeder WebDAV-server funktionieren genauso. Das telefon behält die originale.",
+                  "Una carpeta WebDAV recibe una copia de cada escaneo, en PDF con texto buscable, en una subcarpeta con el nombre de su carpeta aquí. kDrive: servidor https://ID.connect.kdrive.infomaniak.com (el ID es el número de la dirección web de kDrive), tu usuario de Infomaniak y una contraseña de aplicación si tienes la verificación en dos pasos. Nextcloud y cualquier servidor WebDAV funcionan igual. El teléfono guarda los originales.",
+                  "Uma pasta WebDAV recebe uma cópia de cada digitalização, em PDF pesquisável, numa subpasta com o nome da sua pasta aqui. kDrive: servidor https://ID.connect.kdrive.infomaniak.com (o ID é o número no endereço web do kDrive), o seu utilizador Infomaniak e uma palavra-passe de aplicação se tiver a verificação em dois passos. O Nextcloud e qualquer servidor WebDAV funcionam da mesma forma. O telemóvel guarda os originais.",
+                  "Папка WebDAV получает копию каждого скана в виде PDF с поиском по тексту, во вложенной папке с именем его папки здесь. kDrive: сервер https://ID.connect.kdrive.infomaniak.com (ID — число в веб-адресе kDrive), ваш логин Infomaniak и пароль приложения при двухфакторной аутентификации. Nextcloud и любой WebDAV-сервер работают так же. Оригиналы остаются на телефоне."],
+ "server": ["server", "serveur", "server", "servidor", "servidor", "сервер"],
+ "server_prompt": ["server (https://…)", "serveur (https://…)", "server (https://…)", "servidor (https://…)", "servidor (https://…)", "сервер (https://…)"],
+ "username": ["username", "identifiant", "benutzername", "usuario", "utilizador", "имя пользователя"],
+ "password": ["password", "mot de passe", "passwort", "contraseña", "palavra-passe", "пароль"],
+ "folder": ["folder on the server", "dossier sur le serveur", "ordner auf dem server", "carpeta en el servidor", "pasta no servidor", "папка на сервере"],
+ "sync_on_open": ["send when the app opens", "envoyer à l'ouverture", "beim öffnen senden", "enviar al abrir", "enviar ao abrir", "отправлять при открытии"],
+ "sync_now": ["send now", "envoyer maintenant", "jetzt senden", "enviar ahora", "enviar agora", "отправить сейчас"],
+ "syncing": ["sending…", "envoi…", "wird gesendet…", "enviando…", "a enviar…", "отправка…"],
+ "synced_at": ["up to date at %1$s", "à jour à %1$s", "aktuell um %1$s", "al día a las %1$s", "em dia às %1$s", "обновлено в %1$s"],
+ "n_sent": ["%1$d sent", "%1$d envoyé(s)", "%1$d gesendet", "%1$d enviado(s)", "%1$d enviado(s)", "отправлено: %1$d"],
+ "n_removed": ["%1$d removed", "%1$d retiré(s)", "%1$d entfernt", "%1$d quitado(s)", "%1$d retirado(s)", "удалено: %1$d"],
+ "sync_failed": ["not sent: %1$s", "non envoyé : %1$s", "nicht gesendet: %1$s", "no enviado: %1$s", "não enviado: %1$s", "не отправлено: %1$s"],
+ "export_credentials": ["export credentials", "exporter les identifiants", "zugangsdaten exportieren", "exportar credenciales", "exportar credenciais", "экспортировать учётные данные"],
+ "export_credentials_hint": ["a file to set up another device — it holds the password", "un fichier pour configurer un autre appareil — il contient le mot de passe", "eine datei, um ein anderes gerät einzurichten — sie enthält das passwort", "un archivo para configurar otro dispositivo — contiene la contraseña", "um ficheiro para configurar outro aparelho — contém a palavra-passe", "файл для настройки другого устройства — в нём пароль"],
+ "import_credentials": ["import credentials", "importer les identifiants", "zugangsdaten importieren", "importar credenciales", "importar credenciais", "импортировать учётные данные"],
+ "credentials_not_a_file": ["not a Reader's credentials file", "ce n'est pas un fichier d'identifiants Reader's", "keine Reader's-zugangsdatendatei", "no es un archivo de credenciales Reader's", "não é um ficheiro de credenciais Reader's", "это не файл учётных данных Reader's"],
+ "credentials_nothing": ["this file holds nothing for %1$s", "ce fichier ne contient rien pour %1$s", "diese datei enthält nichts für %1$s", "este archivo no contiene nada para %1$s", "este ficheiro não contém nada para %1$s", "в этом файле нет ничего для %1$s"],
+ "credentials_imported": ["credentials imported", "identifiants importés", "zugangsdaten importiert", "credenciales importadas", "credenciais importadas", "учётные данные импортированы"],
+ "credentials_imported_from": ["server and login taken from %1$s — the folder stays yours", "serveur et identifiant repris de %1$s — le dossier reste le vôtre", "server und login aus %1$s übernommen — der ordner bleibt ihrer", "servidor y usuario tomados de %1$s — la carpeta sigue siendo la suya", "servidor e utilizador retirados de %1$s — a pasta continua a sua", "сервер и логин взяты из %1$s — папка остаётся вашей"],
+ "credentials_login_from": ["login taken from %1$s — now enter the WebDAV server", "identifiant repris de %1$s — saisissez maintenant le serveur WebDAV", "login aus %1$s übernommen — jetzt den WebDAV-server eingeben", "usuario tomado de %1$s — ahora escriba el servidor WebDAV", "utilizador retirado de %1$s — agora escreva o servidor WebDAV", "логин взят из %1$s — теперь введите сервер WebDAV"],
+ "new_pages_look": ["look of new pages", "aspect des nouvelles pages", "aussehen neuer seiten", "aspecto de las páginas nuevas", "aspeto das novas páginas", "вид новых страниц"],
+ "text_language": ["language of the text (also on the capture screen)", "langue du texte (aussi sur l'écran de capture)", "sprache des textes (auch auf dem aufnahmebildschirm)", "idioma del texto (también en la pantalla de captura)", "língua do texto (também no ecrã de captura)", "язык текста (также на экране съёмки)"],
+ "ocr_hint": ["The text is read on this phone, never sent anywhere to be read. Clean: white paper, colours kept. Grey and b & w suit plain text. Photo: the straightened page as the camera saw it.",
+              "Le texte est lu sur ce téléphone, jamais envoyé ailleurs pour être lu. Net : papier blanc, couleurs gardées. Gris et n & b conviennent au texte seul. Photo : la page redressée telle que l'appareil l'a vue.",
+              "Der text wird auf diesem telefon gelesen, nie zum lesen verschickt. Sauber: weisses papier, farben bleiben. Grau und s/w passen zu reinem text. Foto: die begradigte seite, wie die kamera sie sah.",
+              "El texto se lee en este teléfono, nunca se envía a otro sitio para leerlo. Limpio: papel blanco, colores conservados. Gris y b/n van bien para solo texto. Foto: la página enderezada tal como la vio la cámara.",
+              "O texto é lido neste telemóvel, nunca enviado para ser lido. Limpo: papel branco, cores mantidas. Cinzento e p/b servem para texto simples. Foto: a página endireitada como a câmara a viu.",
+              "Текст распознаётся на этом телефоне и никуда не отправляется. Чисто: белая бумага, цвета сохранены. Серый и ч/б подходят для простого текста. Фото: выровненная страница, как её увидела камера."],
+ "theme_dark": ["dark", "sombre", "dunkel", "oscuro", "escuro", "тёмная"],
+ "theme_light": ["light", "clair", "hell", "claro", "claro", "светлая"],
+ "colours": ["colours", "couleurs", "farben", "colores", "cores", "цвета"],
+ "text_size": ["text size", "taille du texte", "textgrösse", "tamaño del texto", "tamanho do texto", "размер текста"],
+ "font": ["font", "police", "schrift", "fuente", "tipo de letra", "шрифт"],
+ "haptics": ["vibration on touch", "vibration au toucher", "vibration beim tippen", "vibración al tocar", "vibração ao tocar", "вибрация при касании"],
+ "on": ["on", "oui", "ein", "sí", "sim", "вкл"],
+ "off": ["off", "non", "aus", "no", "não", "выкл"],
+ "credits": ["Text recognition: Tesseract 5 and Leptonica (Apache 2.0) through Tesseract4Android; language models tessdata_fast (Apache 2.0).",
+             "Reconnaissance du texte : Tesseract 5 et Leptonica (Apache 2.0) via Tesseract4Android ; modèles de langue tessdata_fast (Apache 2.0).",
+             "Texterkennung: Tesseract 5 und Leptonica (Apache 2.0) über Tesseract4Android; sprachmodelle tessdata_fast (Apache 2.0).",
+             "Reconocimiento de texto: Tesseract 5 y Leptonica (Apache 2.0) mediante Tesseract4Android; modelos de idioma tessdata_fast (Apache 2.0).",
+             "Reconhecimento de texto: Tesseract 5 e Leptonica (Apache 2.0) através do Tesseract4Android; modelos de língua tessdata_fast (Apache 2.0).",
+             "Распознавание текста: Tesseract 5 и Leptonica (Apache 2.0) через Tesseract4Android; языковые модели tessdata_fast (Apache 2.0)."],
+ "shortcut_scan": ["New scan", "Nouveau scan", "Neuer Scan", "Nuevo escaneo", "Nova digitalização", "Новый скан"],
+}
+# quantity -> text, per language
+P = {
+ "n_pages": [{"one": "%d page", "other": "%d pages"}, {"one": "%d page", "other": "%d pages"}, {"one": "%d seite", "other": "%d seiten"}, {"one": "%d página", "other": "%d páginas"}, {"one": "%d página", "other": "%d páginas"}, {"one": "%d страница", "few": "%d страницы", "many": "%d страниц", "other": "%d страницы"}],
+ "n_documents": [{"one": "%d document", "other": "%d documents"}, {"one": "%d document", "other": "%d documents"}, {"one": "%d dokument", "other": "%d dokumente"}, {"one": "%d documento", "other": "%d documentos"}, {"one": "%d documento", "other": "%d documentos"}, {"one": "%d документ", "few": "%d документа", "many": "%d документов", "other": "%d документа"}],
+ "n_pictures": [{"one": "%d JPEG picture", "other": "%d JPEG pictures"}, {"one": "%d image JPEG", "other": "%d images JPEG"}, {"one": "%d JPEG-bild", "other": "%d JPEG-bilder"}, {"one": "%d imagen JPEG", "other": "%d imágenes JPEG"}, {"one": "%d imagem JPEG", "other": "%d imagens JPEG"}, {"one": "%d изображение JPEG", "few": "%d изображения JPEG", "many": "%d изображений JPEG", "other": "%d изображения JPEG"}],
+ "n_selected": [{"one": "%d selected", "other": "%d selected"}, {"one": "%d sélectionné", "other": "%d sélectionnés"}, {"one": "%d ausgewählt", "other": "%d ausgewählt"}, {"one": "%d seleccionado", "other": "%d seleccionados"}, {"one": "%d selecionado", "other": "%d selecionados"}, {"one": "выбран %d", "few": "выбрано %d", "many": "выбрано %d", "other": "выбрано %d"}],
+ "delete_docs_q": [{"one": "delete this document?", "other": "delete these %d documents?"}, {"one": "supprimer ce document ?", "other": "supprimer ces %d documents ?"}, {"one": "dieses dokument löschen?", "other": "diese %d dokumente löschen?"}, {"one": "¿eliminar este documento?", "other": "¿eliminar estos %d documentos?"}, {"one": "eliminar este documento?", "other": "eliminar estes %d documentos?"}, {"one": "удалить %d документ?", "few": "удалить %d документа?", "many": "удалить %d документов?", "other": "удалить %d документа?"}],
+ "discard_pages_q": [{"one": "discard this page?", "other": "discard these %d pages?"}, {"one": "abandonner cette page ?", "other": "abandonner ces %d pages ?"}, {"one": "diese seite verwerfen?", "other": "diese %d seiten verwerfen?"}, {"one": "¿descartar esta página?", "other": "¿descartar estas %d páginas?"}, {"one": "descartar esta página?", "other": "descartar estas %d páginas?"}, {"one": "отменить %d страницу?", "few": "отменить %d страницы?", "many": "отменить %d страниц?", "other": "отменить %d страницы?"}],
+}
+
+def esc(t): return escape(t).replace("'", "\\'")
+
+res = os.path.join(os.path.dirname(__file__), "..", "app", "src", "main", "res")
+for i, lang in enumerate(LANGS):
+    d = os.path.join(res, "values" if lang == "en" else f"values-{lang}")
+    os.makedirs(d, exist_ok=True)
+    out = ['<?xml version="1.0" encoding="utf-8"?>', "<resources>"]
+    if lang == "en": out.append('    <string name="app_name">Reader\\\'s Scanner</string>')
+    for k, v in S.items():
+        assert len(v) == 6, k
+        out.append(f'    <string name="{k}">{esc(v[i])}</string>')
+    for k, v in P.items():
+        out.append(f'    <plurals name="{k}">')
+        out += [f'        <item quantity="{q}">{esc(t)}</item>' for q, t in v[i].items()]
+        out.append("    </plurals>")
+    out.append("</resources>")
+    open(os.path.join(d, "strings.xml"), "w").write("\n".join(out) + "\n")

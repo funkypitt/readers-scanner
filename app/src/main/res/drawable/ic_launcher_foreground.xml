@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A page inside the four corners of a viewfinder. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="3.5" android:fillColor="#00000000" android:strokeLineCap="round"
+        android:pathData="M30,40v-10h10 M68,30h10v10 M78,68v10h-10 M40,78h-10v-10" />
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="3" android:fillColor="#00000000" android:strokeLineJoin="round"
+        android:pathData="M42,37h18l7,7v27h-25z M60,37v7h7" />
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="2.5" android:fillColor="#00000000" android:strokeLineCap="round"
+        android:pathData="M47,52h15 M47,58h15 M47,64h10" />
+</vector>

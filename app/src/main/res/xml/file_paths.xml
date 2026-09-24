@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PDFs handed to the share menu, and the credentials file (both in the cache, cleaned up). -->
+<paths>
+    <cache-path name="share" path="share/" />
+    <cache-path name="credentials" path="credentials/" />
+</paths>
