@@ -15,6 +15,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.AspectRatio
@@ -35,7 +36,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import com.freedomfighter.readersscanner.data.CaptureEngine
 import com.freedomfighter.readersscanner.data.Ocr
+import com.freedomfighter.readersscanner.engine.MlKit
 import com.freedomfighter.readersscanner.data.Store
 import com.freedomfighter.readersscanner.scan.Detector
 import com.freedomfighter.readersscanner.scan.Session
@@ -51,7 +54,8 @@ import kotlin.math.max
  * Opened with [EXTRA_DOC] it adds pages to that document ([EXTRA_REVIEW]: or edits its pages).
  */
 class ScanActivity : ComponentActivity() {
-    enum class Mode { CAMERA, REVIEW }
+    /** EXTERNAL: Google's scanner screen is open (private build). */
+    enum class Mode { CAMERA, REVIEW, EXTERNAL }
 
     private val app get() = application as App
     lateinit var session: Session
@@ -82,6 +86,29 @@ class ScanActivity : ComponentActivity() {
         if (ok && mode == Mode.CAMERA) bind()
     }
 
+    /** Pages came from Google's scanner in this session: the review then shows the language row. */
+    var external by mutableStateOf(false)
+    private val googleScanner = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { r ->
+        val uris = if (r.resultCode == RESULT_OK) MlKit.scannedPages(r.data) else emptyList()
+        if (uris.isEmpty()) { if (session.pages.isEmpty()) discard() else toReview(); return@registerForActivityResult }
+        external = true
+        Thread { uris.forEach { session.addFromUri(it, scanned = true) }; runOnUiThread { toReview() } }.start()
+    }
+
+    private val useGoogleScanner get() = MlKit.available && app.prefs.settings.value.capture == CaptureEngine.MLKIT
+
+    private fun openGoogleScanner() {
+        mode = Mode.EXTERNAL
+        unbind()
+        MlKit.scanner(this, { sender -> googleScanner.launch(IntentSenderRequest.Builder(sender).build()) }, { err ->
+            // Play services missing or refusing: our own camera instead, said once.
+            failed = true
+            android.widget.Toast.makeText(this, "ML Kit: $err", android.widget.Toast.LENGTH_LONG).show()
+            mode = Mode.CAMERA
+            if (granted) bind() else askAgain()
+        })
+    }
+
     private val picker = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(30)) { uris ->
         if (uris.isNotEmpty()) importUris(uris)
     }
@@ -108,7 +135,8 @@ class ScanActivity : ComponentActivity() {
             scaleType = PreviewView.ScaleType.FILL_CENTER
             implementationMode = PreviewView.ImplementationMode.COMPATIBLE
         }
-        if (mode == Mode.CAMERA) { if (granted) bind() else { asked = true; permission.launch(Manifest.permission.CAMERA) } }
+        if (mode == Mode.CAMERA && useGoogleScanner) openGoogleScanner()
+        else if (mode == Mode.CAMERA) { if (granted) bind() else { asked = true; permission.launch(Manifest.permission.CAMERA) } }
         setContent {
             val settings by app.prefs.settings.collectAsState()
             ReaderTheme(settings) { ScanScreen(this, app) }
@@ -124,6 +152,7 @@ class ScanActivity : ComponentActivity() {
     override fun onPause() { orientation.disable(); super.onPause() }
 
     fun toCamera() {
+        if (useGoogleScanner) { openGoogleScanner(); return }
         mode = Mode.CAMERA
         if (granted) bind() else askAgain()
     }

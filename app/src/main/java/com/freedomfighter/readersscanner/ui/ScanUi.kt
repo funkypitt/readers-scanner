@@ -92,7 +92,8 @@ fun ScanScreen(a: ScanActivity, app: App) {
         ScanActivity.Mode.CAMERA -> CameraView(a, app, onBack = {
             if (a.session.pages.isEmpty()) a.discard() else a.toReview()
         })
-        ScanActivity.Mode.REVIEW -> ReviewView(a, onCrop = { cropping = it }, onFile = { filing = true }, onBack = { confirmDiscard = true })
+        ScanActivity.Mode.REVIEW -> ReviewView(a, app, onCrop = { cropping = it }, onFile = { filing = true }, onBack = { confirmDiscard = true })
+        ScanActivity.Mode.EXTERNAL -> Box(Modifier.fillMaxSize().background(Color.Black))
     }
     cropping?.let { d -> CropView(a, d) { cropping = null } }
     if (filing) FileSheet(a, onDismiss = { filing = false })
@@ -126,17 +127,7 @@ private fun CameraView(a: ScanActivity, app: App, onBack: () -> Unit) {
             Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
-                OcrLanguages.codes.forEach { code ->
-                    val on = code == s.ocrLanguage
-                    Box(
-                        Modifier.padding(end = 6.dp).background(if (on) Color.White else Color.Transparent)
-                            .border(1.dp, if (on) Color.White else Color.White.copy(alpha = 0.35f))
-                            .noRippleClickable { tick(); app.prefs.setOcrLanguage(code) }
-                            .padding(horizontal = 11.dp, vertical = 7.dp)
-                    ) { T(OcrLanguages.short(code), size = LocalTypo.current.small, color = if (on) Color.Black else Color.White, maxLines = 1) }
-                }
-            }
+            LanguageChips(app, Modifier.weight(1f))
             if (a.hasTorch) T(if (a.torch) "☀" else "☼", Modifier.noRippleClickable { a.toggleTorch() }.padding(start = 10.dp, end = 4.dp), color = if (a.torch) Color.White else Color.White.copy(alpha = 0.6f), maxLines = 1)
         }
         Small(stringResource(R.string.text_in, OcrLanguages.name(s.ocrLanguage)), Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 6.dp), color = Color.White.copy(alpha = 0.6f), maxLines = 1)
@@ -193,6 +184,26 @@ private fun CameraView(a: ScanActivity, app: App, onBack: () -> Unit) {
     }
 }
 
+/** The language the pages will be read in, one touch each, on top of the capture. */
+@Composable
+fun LanguageChips(app: App, modifier: Modifier = Modifier, dark: Boolean = true) {
+    val s by app.prefs.settings.collectAsState()
+    val tick = rememberTick()
+    val fg = if (dark) Color.White else LocalColors.current.fg
+    val bg = if (dark) Color.Black else LocalColors.current.bg
+    Row(modifier.horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
+        OcrLanguages.codes.forEach { code ->
+            val on = code == s.ocrLanguage
+            Box(
+                Modifier.padding(end = 6.dp).background(if (on) fg else Color.Transparent)
+                    .border(1.dp, if (on) fg else fg.copy(alpha = 0.35f))
+                    .noRippleClickable { tick(); app.prefs.setOcrLanguage(code) }
+                    .padding(horizontal = 11.dp, vertical = 7.dp)
+            ) { T(OcrLanguages.short(code), size = LocalTypo.current.small, color = if (on) bg else fg, maxLines = 1) }
+        }
+    }
+}
+
 /** A draft's page, small; blank while it is being made. */
 @Composable
 private fun Thumb(d: Draft, modifier: Modifier) {
@@ -210,7 +221,7 @@ private fun Thumb(d: Draft, modifier: Modifier) {
 // ---------------------------------------------------------------------------------------------
 
 @Composable
-private fun ReviewView(a: ScanActivity, onCrop: (Draft) -> Unit, onFile: () -> Unit, onBack: () -> Unit) {
+private fun ReviewView(a: ScanActivity, app: App, onCrop: (Draft) -> Unit, onFile: () -> Unit, onBack: () -> Unit) {
     val colors = LocalColors.current
     val pages = a.session.pages
     val pager = rememberPagerState { pages.size }
@@ -223,6 +234,12 @@ private fun ReviewView(a: ScanActivity, onCrop: (Draft) -> Unit, onFile: () -> U
     Page {
         Column(Modifier.fillMaxSize()) {
             ScreenTitle(stringResource(R.string.page_n_of, pager.currentPage + 1, pages.size), onBack = onBack)
+            // Google's scanner has no language row: the choice is made here instead.
+            if (a.external && a.docId == null) {
+                val s by app.prefs.settings.collectAsState()
+                LanguageChips(app, Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), dark = false)
+                Small(stringResource(R.string.text_in, OcrLanguages.name(s.ocrLanguage)), Modifier.padding(horizontal = 18.dp), maxLines = 1)
+            }
             HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth(), key = { pages.getOrNull(it)?.key ?: it }, beyondViewportPageCount = 1) { i ->
                 val d = pages.getOrNull(i) ?: return@HorizontalPager
                 PageImage(d, Modifier.fillMaxSize().padding(16.dp))

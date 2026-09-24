@@ -29,6 +29,27 @@
   (id → path, etag, key). Waits for OCR so only searchable PDFs go up. A server file changed
   since we sent it is never deleted.
 
+## Two builds
+
+- `publique` (F-Droid): free software only. `prive` (`applicationIdSuffix .prive`, name
+  "Reader's Scanner (privé)"): adds Google ML Kit to compare — document scanner (needs Play
+  services; its own screen, so the language row moves to the review) and Latin text
+  recognition (bundled). `engine/Engines.kt` is the interface; `src/prive/.../MlKit.kt` the real
+  one, `src/publique/.../MlKit.kt` a stub. Settings: "trouver la page" / "lire le texte". The public
+  APK has no Google classes (checked with `unzip -l | grep -c gms`).
+- ML Kit gives lines and boxes: `Pdf.write(..., layers)` writes the invisible text layer itself
+  (Helvetica WinAnsi, stretched with Tz). Word by word mixed up the copy order in pdftotext;
+  lines keep it.
+- "Best" Tesseract models: `data/Models.kt` downloads tessdata_best per language into
+  `files/ocr/best/tessdata`; `Ocr.tesseractFor` picks it when present. The document's info line
+  says which reader read it (`Doc.readBy`).
+- Comparison screen (private build, document ⋯): every reader on the same pages, time and word
+  count, nothing saved. First sample (synthetic letter, emulator): fast 3 errors, best 0, ML Kit 1
+  + lost spaces before colons; all ~0.8–0.9 s a page.
+- Build for the phone only: `./gradlew -Pabis=arm64-v8a assemblePriveDebug` (49 MB, under the
+  Telegram bot's 50 MB). On the emulator (no Google account) Play services cannot fetch the
+  scanner module ("Something went wrong"); cancelling returns to the app.
+
 ## Sharing and menus
 
 - `ui/Share.kt`: `ShareMenu` (PDF / images / text) for one or several documents; long press in a

@@ -36,6 +36,7 @@ class App : Application() {
         Store.init(this)
         CredentialsShare.cleanUp(this)
         Ocr.onDone = { sync() }
+        Ocr.engine = { prefs.settings.value.reader }
         Ocr.start(this)
     }
 

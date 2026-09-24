@@ -9,6 +9,10 @@ enum class ThemeMode { DARK, LIGHT, SYSTEM }
 enum class FontChoice { SERIF, SANS, MONO }
 enum class TextSize { SMALL, MEDIUM, LARGE }
 enum class Align { LEFT, CENTER }
+/** Who finds and straightens the page (private build: Google's scanner as an alternative). */
+enum class CaptureEngine { READERS, MLKIT }
+/** Who reads the text (private build: Google's recognizer as an alternative). */
+enum class TextEngine { TESSERACT, MLKIT }
 
 data class Settings(
     val theme: ThemeMode = ThemeMode.DARK,
@@ -25,7 +29,9 @@ data class Settings(
     val folder: String = "Scans",
     val username: String = "",
     val password: String = "",
-    val syncOnOpen: Boolean = true
+    val syncOnOpen: Boolean = true,
+    val capture: CaptureEngine = CaptureEngine.READERS,
+    val reader: TextEngine = TextEngine.TESSERACT
 ) {
     val configured: Boolean get() = server.isNotBlank()
     /** The folder URL, always ending with "/". */
@@ -53,7 +59,9 @@ class Prefs(context: Context) {
         folder = sp.getString("folder", "Scans") ?: "Scans",
         username = sp.getString("username", "") ?: "",
         password = sp.getString("password", "") ?: "",
-        syncOnOpen = sp.getBoolean("sync_on_open", true)
+        syncOnOpen = sp.getBoolean("sync_on_open", true),
+        capture = enumOr(sp.getString("capture", null), CaptureEngine.READERS),
+        reader = enumOr(sp.getString("reader", null), TextEngine.TESSERACT)
     )
     private inline fun <reified E : Enum<E>> enumOr(name: String?, default: E): E =
         name?.let { runCatching { enumValueOf<E>(it) }.getOrNull() } ?: default
@@ -67,6 +75,8 @@ class Prefs(context: Context) {
     fun setFilter(f: Filter) = sp.edit().putString("filter", f.name).apply()
     fun setAccount(server: String, folder: String, username: String, password: String) =
         sp.edit().putString("server", server.trim()).putString("folder", folder.trim().ifBlank { "Scans" }).putString("username", username.trim()).putString("password", password).apply()
+    fun setCapture(e: CaptureEngine) = sp.edit().putString("capture", e.name).apply()
+    fun setReader(e: TextEngine) = sp.edit().putString("reader", e.name).apply()
     fun setSyncOnOpen(v: Boolean) = sp.edit().putBoolean("sync_on_open", v).apply()
     fun toggleTheme(systemIsDark: Boolean) {
         val dark = when (_settings.value.theme) { ThemeMode.DARK -> true; ThemeMode.LIGHT -> false; ThemeMode.SYSTEM -> systemIsDark }

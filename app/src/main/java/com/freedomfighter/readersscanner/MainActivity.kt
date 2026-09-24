@@ -50,6 +50,7 @@ class MainActivity : ComponentActivity() {
                     is Screen.DocView -> DocScreen(nav, app, s.id)
                     is Screen.Viewer -> ViewerScreen(nav, s.id, s.page)
                     Screen.Search -> SearchScreen(nav)
+                    is Screen.Compare -> com.freedomfighter.readersscanner.ui.CompareScreen(nav, s.id)
                     Screen.Settings -> SettingsScreen(nav, app)
                 }
             }

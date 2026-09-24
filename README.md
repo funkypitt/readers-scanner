@@ -23,6 +23,7 @@ folder (kDrive, Nextcloud…) if you want. No account, no cloud OCR, black and w
 - **WebDAV**: a copy of each PDF goes to your server, in a subfolder named after its folder.
   Renames, moves and deletions follow. Credentials import from a Reader's credentials file,
   including one exported by Reader's Notes, Recorder, Tasks or Calendar.
+- Optional "best" models per language, downloaded from the settings, for more accurate reading.
 - Six languages for the app (en, fr, de, es, pt, ru). No analytics, backup off.
 
 More detail: [docs/NOTES.md](docs/NOTES.md).
@@ -30,7 +31,7 @@ More detail: [docs/NOTES.md](docs/NOTES.md).
 ## Build
 
     export JAVA_HOME=/path/to/jdk-21
-    ./gradlew assembleDebug
+    ./gradlew assemblePubliqueDebug
     ./gradlew testDebugUnitTest
 
 Strings for the six languages are generated from the table in `tools/strings.py`.

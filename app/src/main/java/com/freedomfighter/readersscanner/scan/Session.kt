@@ -69,25 +69,29 @@ class Session(private val context: Context, val docId: String?, private val defa
      * A photo from the camera or the gallery. [hint]: where the live view last saw the sheet,
      * used if the photo itself shows nothing convincing.
      */
-    fun addPhoto(raw: File, hint: FloatArray?): Draft {
+    fun addPhoto(raw: File, hint: FloatArray?, detect: Boolean = true, filter: Filter = defaultFilter): Draft {
         if (pages.isEmpty() && docId == null) created = System.currentTimeMillis()
-        val d = newDraft(defaultFilter)
+        val d = newDraft(filter)
         pages.add(d)
         work.launch {
             val src = Imaging.prepareSource(raw, d.src)
             raw.delete()
             if (src == null) { d.failed = true; return@launch }
-            d.quad = Imaging.detect(src) ?: hint ?: Imaging.WHOLE
+            d.quad = (if (detect) Imaging.detect(src) else null) ?: hint ?: Imaging.WHOLE
             src.recycle()
             renderNow(d)
         }
         return d
     }
 
-    fun addFromUri(uri: Uri) {
+    /**
+     * A picture from the gallery, or ([scanned]) a page already found, straightened and cleaned
+     * by Google's scanner: kept whole and as it is, our looks still one touch away.
+     */
+    fun addFromUri(uri: Uri, scanned: Boolean = false) {
         val raw = rawFile()
         val ok = runCatching { context.contentResolver.openInputStream(uri)?.use { input -> raw.outputStream().use { input.copyTo(it) } } != null }.getOrDefault(false)
-        if (ok) addPhoto(raw, null)
+        if (ok) { if (scanned) addPhoto(raw, null, detect = false, filter = Filter.ORIGINAL) else addPhoto(raw, null) }
     }
 
     /** The page is made again from its photo (after a crop, a turn or another look). */

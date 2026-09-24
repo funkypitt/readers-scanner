@@ -14,11 +14,24 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
-        // Phones, and x86_64 for the emulator.
-        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64") }
+        // Phones, and x86_64 for the emulator; -Pabis=arm64-v8a for a phone-only APK.
+        ndk { abiFilters += ((project.findProperty("abis") as String?)?.split(",") ?: listOf("arm64-v8a", "armeabi-v7a", "x86_64")) }
     }
 
     buildTypes { release { isMinifyEnabled = false } }
+
+    // publique: free software only (F-Droid). prive: the same app plus Google's ML Kit (document
+    // scanner and text recognition) to compare with; its own package, so both can be installed.
+    flavorDimensions += "audience"
+    productFlavors {
+        create("publique") { dimension = "audience" }
+        create("prive") {
+            dimension = "audience"
+            applicationIdSuffix = ".prive"
+            versionNameSuffix = "-prive"
+            resValue("string", "app_name", "Reader\\'s Scanner (privé)")
+        }
+    }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
@@ -42,6 +55,10 @@ dependencies {
     implementation("androidx.exifinterface:exifinterface:1.3.7")
     // Tesseract 5 + Leptonica, on the phone (Apache 2.0).
     implementation("com.github.adaptech-cz.Tesseract4Android:tesseract4android-openmp:4.8.0")
+    // Private build only: Google ML Kit, on the phone (needs Google Play services for the scanner).
+    "priveImplementation"("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0")
+    "priveImplementation"("com.google.mlkit:text-recognition:16.0.1")
+    "priveImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
     debugImplementation("androidx.compose.ui:ui-tooling")

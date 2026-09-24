@@ -39,7 +39,9 @@ data class Doc(
     val pages: List<Page>,
     val ocr: OcrState,
     /** Bumped on every change of the pages, so an OCR run on older pages is thrown away. */
-    val rev: Int
+    val rev: Int,
+    /** Which reader produced the text: "tesseract-fast", "tesseract-best" or "mlkit". */
+    val readBy: String = ""
 )
 
 object Store {
@@ -158,13 +160,13 @@ object Store {
     }
 
     /** Called by the OCR once it has read a revision of the document. */
-    fun ocrDone(id: String, rev: Int, pages: List<String>, pdf: File?) = synchronized(lock) {
+    fun ocrDone(id: String, rev: Int, pages: List<String>, pdf: File?, readBy: String = "") = synchronized(lock) {
         val d = docs[id] ?: return
         if (d.rev != rev) { pdf?.delete(); return }
         atomicWrite(textFile(d), pages.joinToString(PAGE_BREAK))
         if (pdf != null) pdf.renameTo(pdfFile(d))
         val words = if (d.named) null else Naming.firstWords(pages.firstOrNull { it.isNotBlank() }.orEmpty())
-        writeDoc(d.copy(ocr = OcrState.DONE, name = if (d.named) d.name else words ?: d.name))
+        writeDoc(d.copy(ocr = OcrState.DONE, name = if (d.named) d.name else words ?: d.name, readBy = readBy))
         changed()
     }
 
@@ -218,7 +220,7 @@ object Store {
                 .put("quad", JSONArray().apply { p.quad.forEach { put(it.toDouble()) } }))
         }
         val o = JSONObject().put("id", d.id).put("created", d.created).put("named", d.named)
-            .put("lang", d.lang).put("ocr", d.ocr.name).put("rev", d.rev).put("pages", pages)
+            .put("lang", d.lang).put("ocr", d.ocr.name).put("rev", d.rev).put("readBy", d.readBy).put("pages", pages)
         d.name?.let { o.put("name", it) }
         d.folder?.let { o.put("folder", it) }
         dir(d.id).mkdirs()
@@ -242,7 +244,8 @@ object Store {
                 Page(p.getString("id"), FloatArray(8) { q.getDouble(it).toFloat() }, p.optInt("rotation"), runCatching { Filter.valueOf(p.getString("filter")) }.getOrDefault(Filter.AUTO))
             },
             ocr = runCatching { OcrState.valueOf(o.getString("ocr")) }.getOrDefault(OcrState.PENDING),
-            rev = o.optInt("rev")
+            rev = o.optInt("rev"),
+            readBy = o.optString("readBy")
         )
     }.getOrNull()
 

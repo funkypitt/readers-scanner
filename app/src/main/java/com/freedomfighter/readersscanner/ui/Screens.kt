@@ -83,7 +83,11 @@ import com.freedomfighter.readersscanner.data.CredentialsShare
 import com.freedomfighter.readersscanner.data.Doc
 import com.freedomfighter.readersscanner.data.Filter
 import com.freedomfighter.readersscanner.data.FontChoice
+import com.freedomfighter.readersscanner.data.CaptureEngine
 import com.freedomfighter.readersscanner.data.Ocr
+import com.freedomfighter.readersscanner.data.Reader
+import com.freedomfighter.readersscanner.data.TextEngine
+import com.freedomfighter.readersscanner.engine.MlKit
 import com.freedomfighter.readersscanner.data.OcrLanguages
 import com.freedomfighter.readersscanner.data.OcrState
 import com.freedomfighter.readersscanner.data.Pdf
@@ -106,6 +110,8 @@ sealed class Screen {
     data class DocView(val id: String) : Screen()
     data class Viewer(val id: String, val page: Int) : Screen()
     data object Search : Screen()
+    /** Private build: every reader on the same document, side by side. */
+    data class Compare(val id: String) : Screen()
     data object Settings : Screen()
 }
 
@@ -370,6 +376,7 @@ fun DocMenu(nav: Nav, app: App, d: Doc, onDismiss: () -> Unit) {
         MenuItem(stringResource(R.string.move_to)) { shown = false; moving = true },
         MenuItem(stringResource(R.string.edit_pages)) { ScanActivity.start(context, doc = d.id, review = true) },
         MenuItem(stringResource(R.string.read_again)) { shown = false; reading = true },
+        *(if (MlKit.available) arrayOf(MenuItem(stringResource(R.string.compare_readers)) { nav.push(Screen.Compare(d.id)) }) else emptyArray()),
         MenuItem(stringResource(R.string.delete)) { shown = false; deleting = true }
     ), onDismiss = { shown = false; close() })
     if (renaming) TextPrompt(stringResource(R.string.rename_hint), initial = d.name.orEmpty(), selectAll = true, allowEmpty = true, capitalize = true,
@@ -382,7 +389,7 @@ fun DocMenu(nav: Nav, app: App, d: Doc, onDismiss: () -> Unit) {
     }
     if (reading) {
         TextMenu(stringResource(R.string.read_again_in), OcrLanguages.codes.map { c ->
-            MenuItem((if (c == d.lang) "● " else "○ ") + OcrLanguages.name(c)) { Store.readAgain(d.id, c); Ocr.enqueue(d.id) }
+            MenuItem((if (c == d.lang) "● " else "○ ") + OcrLanguages.name(c), readerName(context, if (app.prefs.settings.value.reader == TextEngine.MLKIT && MlKit.available) Reader.MLKIT.key else Ocr.tesseractFor(context, c).key)) { Store.readAgain(d.id, c); Ocr.enqueue(d.id) }
         }, onDismiss = { reading = false; onDismiss() })
     }
     if (deleting) {
@@ -391,6 +398,13 @@ fun DocMenu(nav: Nav, app: App, d: Doc, onDismiss: () -> Unit) {
             MenuItem(stringResource(R.string.action_cancel)) { }
         ), onDismiss = { deleting = false; onDismiss() })
     }
+}
+
+fun readerName(context: Context, key: String): String? = when (key) {
+    Reader.TESSERACT_FAST.key -> context.getString(R.string.reader_fast)
+    Reader.TESSERACT_BEST.key -> context.getString(R.string.reader_best)
+    Reader.MLKIT.key -> context.getString(R.string.engine_mlkit)
+    else -> null
 }
 
 suspend fun openPdf(context: Context, d: Doc) {
@@ -422,7 +436,8 @@ fun DocScreen(nav: Nav, app: App, id: String) {
         Column(Modifier.fillMaxSize()) {
             ScreenTitleActions(d.name ?: whenLabel(context, d.created), onBack = { nav.pop() }, actions = listOf("⋯" to { menu = true }))
             val status = statusLabel(context, d, working)
-            val info = listOfNotNull(whenLabel(context, d.created), context.resources.getQuantityString(R.plurals.n_pages, d.pages.size, d.pages.size), OcrLanguages.name(d.lang), status).joinToString(" · ")
+            val readBy = if (MlKit.available || d.readBy == Reader.TESSERACT_BEST.key) readerName(context, d.readBy) else null
+            val info = listOfNotNull(whenLabel(context, d.created), context.resources.getQuantityString(R.plurals.n_pages, d.pages.size, d.pages.size), OcrLanguages.name(d.lang), readBy, status).joinToString(" · ")
             Small(info, Modifier.padding(horizontal = rowPadH, vertical = 10.dp), maxLines = 2)
             if (showText) {
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = rowPadH)) {
@@ -505,6 +520,51 @@ fun ViewerScreen(nav: Nav, id: String, start: Int) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Compare (private build): each reader on the same pages, its time, its text
+// ---------------------------------------------------------------------------------------------
+
+@Composable
+fun CompareScreen(nav: Nav, id: String) {
+    val context = LocalContext.current
+    val d = remember(id) { Store.doc(id) } ?: run { LaunchedEffect(Unit) { nav.pop() }; return }
+    val readers = remember(id) { Ocr.readers(context, d.lang) }
+    val trials = remember { mutableStateListOf<Ocr.Trial>() }
+    LaunchedEffect(id) {
+        trials.clear()
+        for (r in readers) trials.add(withContext(Dispatchers.Default) { Ocr.trial(context, d, r) })
+    }
+    BackHandler { nav.pop() }
+    Page {
+        Column(Modifier.fillMaxSize()) {
+            ScreenTitle(stringResource(R.string.compare_readers), onBack = { nav.pop() })
+            Small(stringResource(R.string.compare_hint, OcrLanguages.name(d.lang)), Modifier.padding(horizontal = rowPadH, vertical = 10.dp), maxLines = 4)
+            SelectionContainer {
+                LazyColumn(Modifier.weight(1f)) {
+                    items(readers) { r ->
+                        val t = trials.firstOrNull { it.reader == r }
+                        Column(Modifier.fillMaxWidth().padding(horizontal = rowPadH, vertical = 12.dp)) {
+                            val words = t?.pages?.sumOf { p -> p.split(Regex("\\s+")).count { it.isNotBlank() } } ?: 0
+                            T(readerName(context, r.key).orEmpty(), size = LocalTypo.current.title, maxLines = 1)
+                            Small(when {
+                                t == null -> stringResource(R.string.searching)
+                                t.error != null -> t.error
+                                else -> stringResource(R.string.compare_stats, "%.1f".format(t.millis / 1000.0), words)
+                            }, maxLines = 2)
+                            t?.pages?.forEachIndexed { i, p ->
+                                if (t.pages.size > 1) Small("— ${i + 1} —", Modifier.fillMaxWidth().padding(vertical = 8.dp), align = TextAlign.Center, maxLines = 1)
+                                T(com.freedomfighter.readersscanner.data.Reflow.page(p), Modifier.padding(top = 6.dp), size = LocalTypo.current.small, lineHeightMul = 1.4f)
+                            }
+                        }
+                        Rule()
+                    }
+                }
+            }
+            Box(Modifier.windowInsetsPadding(WindowInsets.navigationBars))
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
 // Search: in names and in the text read on the pages
 // ---------------------------------------------------------------------------------------------
 
@@ -538,6 +598,36 @@ fun SearchScreen(nav: Nav) {
             }
         }
     }
+}
+
+/** The "best" Tesseract models: the chosen language first, then the others. */
+@Composable
+private fun BestModels(current: String) {
+    val context = LocalContext.current
+    val progress by com.freedomfighter.readersscanner.data.Models.progress.collectAsState()
+    val failed by com.freedomfighter.readersscanner.data.Models.failed.collectAsState()
+    var stamp by remember { mutableStateOf(0) }
+    var open by remember { mutableStateOf(false) }
+    Small(stringResource(R.string.best_hint), Modifier.padding(horizontal = rowPadH).padding(top = 8.dp), maxLines = 6)
+    val langs = listOf(current) + OcrLanguages.codes.filter { it != current }
+    (if (open) langs else langs.take(1)).forEach { lang ->
+        val has = remember(stamp, progress) { com.freedomfighter.readersscanner.data.Models.has(context, lang) }
+        val mb = com.freedomfighter.readersscanner.data.Models.megabytes(lang)
+        val state = when {
+            progress.containsKey(lang) -> stringResource(R.string.best_downloading, progress[lang] ?: 0)
+            has -> stringResource(R.string.best_installed)
+            lang in failed -> stringResource(R.string.best_failed)
+            else -> stringResource(R.string.best_download, mb)
+        }
+        TextRow(OcrLanguages.name(lang), secondary = state, size = LocalTypo.current.title) {
+            when {
+                progress.containsKey(lang) -> {}
+                has -> { com.freedomfighter.readersscanner.data.Models.remove(context, lang); stamp++ }
+                else -> appScope.launch(Dispatchers.IO) { com.freedomfighter.readersscanner.data.Models.download(context, lang); stamp++ }
+            }
+        }
+    }
+    if (!open) TextRow(stringResource(R.string.best_other_languages), size = LocalTypo.current.small * 1.15f) { open = true }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -599,6 +689,17 @@ fun SettingsScreen(nav: Nav, app: App) {
                     app.prefs.setOcrLanguage(all[(all.indexOf(s.ocrLanguage) + 1) % all.size])
                 }
                 Small(stringResource(R.string.ocr_hint), Modifier.padding(horizontal = rowPadH, vertical = 8.dp), maxLines = 6)
+                BestModels(s.ocrLanguage)
+                if (MlKit.available) {
+                    Rule(Modifier.padding(vertical = 8.dp))
+                    Small(stringResource(R.string.google_hint), Modifier.padding(horizontal = rowPadH, vertical = 8.dp), maxLines = 8)
+                    TextRow(stringResource(if (s.capture == CaptureEngine.MLKIT) R.string.engine_mlkit else R.string.engine_readers), secondary = stringResource(R.string.capture_engine)) {
+                        app.prefs.setCapture(if (s.capture == CaptureEngine.MLKIT) CaptureEngine.READERS else CaptureEngine.MLKIT)
+                    }
+                    TextRow(stringResource(if (s.reader == TextEngine.MLKIT) R.string.engine_mlkit else R.string.engine_tesseract), secondary = stringResource(R.string.text_engine)) {
+                        app.prefs.setReader(if (s.reader == TextEngine.MLKIT) TextEngine.TESSERACT else TextEngine.MLKIT)
+                    }
+                }
                 Rule(Modifier.padding(vertical = 8.dp))
                 TextRow(if (colors.isDark) stringResource(R.string.theme_dark) else stringResource(R.string.theme_light), secondary = stringResource(R.string.colours)) { app.prefs.toggleTheme(colors.isDark) }
                 TextRow(when (s.textSize) { TextSize.SMALL -> "S"; TextSize.MEDIUM -> "M"; TextSize.LARGE -> "L" }, secondary = stringResource(R.string.text_size)) {

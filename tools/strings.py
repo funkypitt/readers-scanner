@@ -143,6 +143,23 @@ S = {
              "Reconocimiento de texto: Tesseract 5 y Leptonica (Apache 2.0) mediante Tesseract4Android; modelos de idioma tessdata_fast (Apache 2.0).",
              "Reconhecimento de texto: Tesseract 5 e Leptonica (Apache 2.0) através do Tesseract4Android; modelos de língua tessdata_fast (Apache 2.0).",
              "Распознавание текста: Tesseract 5 и Leptonica (Apache 2.0) через Tesseract4Android; языковые модели tessdata_fast (Apache 2.0)."],
+ "best_hint": ["More accurate reading: the \"best\" model of a language, downloaded once (slower, and larger).", "Lecture plus exacte : le modèle « meilleur » d'une langue, téléchargé une fois (plus lent et plus gros).", "Genaueres lesen: das „beste“ modell einer sprache, einmal heruntergeladen (langsamer und grösser).", "Lectura más precisa: el modelo «mejor» de un idioma, descargado una vez (más lento y más grande).", "Leitura mais exata: o modelo «melhor» de uma língua, descarregado uma vez (mais lento e maior).", "Более точное чтение: «лучшая» модель языка, загружается один раз (медленнее и больше)."],
+ "best_download": ["fast model — download the best one (%1$d MB)", "modèle rapide — télécharger le meilleur (%1$d Mo)", "schnelles modell — das beste herunterladen (%1$d MB)", "modelo rápido — descargar el mejor (%1$d MB)", "modelo rápido — descarregar o melhor (%1$d MB)", "быстрая модель — загрузить лучшую (%1$d МБ)"],
+ "best_downloading": ["downloading the best model… %1$d %%", "téléchargement du meilleur modèle… %1$d %%", "bestes modell wird geladen… %1$d %%", "descargando el mejor modelo… %1$d %%", "a descarregar o melhor modelo… %1$d %%", "загрузка лучшей модели… %1$d %%"],
+ "best_installed": ["best model in use — touch to remove it", "meilleur modèle utilisé — toucher pour le retirer", "bestes modell in gebrauch — zum entfernen tippen", "mejor modelo en uso — toque para quitarlo", "melhor modelo em uso — toque para o retirar", "используется лучшая модель — коснитесь, чтобы удалить"],
+ "best_failed": ["download failed — touch to try again", "échec du téléchargement — toucher pour réessayer", "download fehlgeschlagen — zum wiederholen tippen", "la descarga falló — toque para reintentar", "a descarga falhou — toque para tentar de novo", "загрузка не удалась — коснитесь, чтобы повторить"],
+ "best_other_languages": ["other languages…", "autres langues…", "andere sprachen…", "otros idiomas…", "outras línguas…", "другие языки…"],
+ "reader_fast": ["Tesseract fast", "Tesseract rapide", "Tesseract schnell", "Tesseract rápido", "Tesseract rápido", "Tesseract быстрый"],
+ "reader_best": ["Tesseract best", "Tesseract meilleur", "Tesseract bestes", "Tesseract mejor", "Tesseract melhor", "Tesseract лучший"],
+ "engine_mlkit": ["ML Kit (Google)"] * 6,
+ "engine_readers": ["Reader's (own camera)", "Reader's (caméra de l'app)", "Reader's (eigene kamera)", "Reader's (cámara propia)", "Reader's (câmara própria)", "Reader's (своя камера)"],
+ "engine_tesseract": ["Tesseract (free software)", "Tesseract (logiciel libre)", "Tesseract (freie software)", "Tesseract (software libre)", "Tesseract (software livre)", "Tesseract (свободное ПО)"],
+ "capture_engine": ["finding the page", "trouver la page", "seite finden", "encontrar la página", "encontrar a página", "поиск страницы"],
+ "text_engine": ["reading the text", "lire le texte", "text lesen", "leer el texto", "ler o texto", "чтение текста"],
+ "google_hint": ["Private build: Google's ML Kit can replace either step, to compare. Its scanner needs Google Play services and shows its own screen (the language is then chosen in the review). Its reader knows the Latin script only (no Russian), on the phone.", "Version privée : ML Kit de Google peut remplacer l'une ou l'autre étape, pour comparer. Son scanner a besoin des services Google Play et montre son propre écran (la langue se choisit alors dans la révision). Son lecteur ne connaît que l'alphabet latin (pas le russe), sur le téléphone.", "Private version: Googles ML Kit kann jeden schritt ersetzen, zum vergleichen. Sein scanner braucht die Google-Play-dienste und zeigt einen eigenen bildschirm (die sprache wird dann in der durchsicht gewählt). Sein leser kennt nur die lateinische schrift (kein russisch), auf dem telefon.", "Versión privada: ML Kit de Google puede sustituir cualquiera de los dos pasos, para comparar. Su escáner necesita los servicios de Google Play y muestra su propia pantalla (el idioma se elige entonces en la revisión). Su lector solo conoce el alfabeto latino (no el ruso), en el teléfono.", "Versão privada: o ML Kit da Google pode substituir qualquer um dos passos, para comparar. O seu digitalizador precisa dos serviços Google Play e mostra o seu próprio ecrã (a língua escolhe-se então na revisão). O seu leitor só conhece o alfabeto latino (não o russo), no telemóvel.", "Частная версия: ML Kit от Google может заменить любой из шагов для сравнения. Его сканер требует сервисов Google Play и показывает свой экран (язык тогда выбирается при просмотре). Его распознавание знает только латиницу (без русского), на телефоне."],
+ "compare_readers": ["compare the readers", "comparer les lecteurs", "leser vergleichen", "comparar los lectores", "comparar os leitores", "сравнить распознавание"],
+ "compare_hint": ["Every reader on this phone, on the same pages (%1$s). Nothing is saved.", "Chaque lecteur de ce téléphone, sur les mêmes pages (%1$s). Rien n'est enregistré.", "Jeder leser auf diesem telefon, auf denselben seiten (%1$s). Nichts wird gespeichert.", "Cada lector de este teléfono, en las mismas páginas (%1$s). No se guarda nada.", "Cada leitor deste telemóvel, nas mesmas páginas (%1$s). Nada é guardado.", "Каждый распознаватель на этом телефоне, на тех же страницах (%1$s). Ничего не сохраняется."],
+ "compare_stats": ["%1$s s · %2$d words", "%1$s s · %2$d mots", "%1$s s · %2$d wörter", "%1$s s · %2$d palabras", "%1$s s · %2$d palavras", "%1$s с · слов: %2$d"],
  "shortcut_scan": ["New scan", "Nouveau scan", "Neuer Scan", "Nuevo escaneo", "Nova digitalização", "Новый скан"],
 }
 # quantity -> text, per language
@@ -158,11 +175,14 @@ P = {
 def esc(t): return escape(t).replace("'", "\\'")
 
 res = os.path.join(os.path.dirname(__file__), "..", "app", "src", "main", "res")
+# The app's name differs between the two builds: one file per flavour.
+pub = os.path.join(os.path.dirname(__file__), "..", "app", "src", "publique", "res", "values")
+os.makedirs(pub, exist_ok=True)
+open(os.path.join(pub, "app_name.xml"), "w").write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <string name="app_name">Reader\\\'s Scanner</string>\n</resources>\n')
 for i, lang in enumerate(LANGS):
     d = os.path.join(res, "values" if lang == "en" else f"values-{lang}")
     os.makedirs(d, exist_ok=True)
     out = ['<?xml version="1.0" encoding="utf-8"?>', "<resources>"]
-    if lang == "en": out.append('    <string name="app_name">Reader\\\'s Scanner</string>')
     for k, v in S.items():
         assert len(v) == 6, k
         out.append(f'    <string name="{k}">{esc(v[i])}</string>')

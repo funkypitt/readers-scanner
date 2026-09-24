@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Reader\'s Scanner</string>
     <string name="app_title">scanner</string>
     <string name="action_ok">ok</string>
     <string name="action_cancel">cancel</string>
@@ -116,6 +115,23 @@
     <string name="on">on</string>
     <string name="off">off</string>
     <string name="credits">Text recognition: Tesseract 5 and Leptonica (Apache 2.0) through Tesseract4Android; language models tessdata_fast (Apache 2.0).</string>
+    <string name="best_hint">More accurate reading: the "best" model of a language, downloaded once (slower, and larger).</string>
+    <string name="best_download">fast model — download the best one (%1$d MB)</string>
+    <string name="best_downloading">downloading the best model… %1$d %%</string>
+    <string name="best_installed">best model in use — touch to remove it</string>
+    <string name="best_failed">download failed — touch to try again</string>
+    <string name="best_other_languages">other languages…</string>
+    <string name="reader_fast">Tesseract fast</string>
+    <string name="reader_best">Tesseract best</string>
+    <string name="engine_mlkit">ML Kit (Google)</string>
+    <string name="engine_readers">Reader\'s (own camera)</string>
+    <string name="engine_tesseract">Tesseract (free software)</string>
+    <string name="capture_engine">finding the page</string>
+    <string name="text_engine">reading the text</string>
+    <string name="google_hint">Private build: Google\'s ML Kit can replace either step, to compare. Its scanner needs Google Play services and shows its own screen (the language is then chosen in the review). Its reader knows the Latin script only (no Russian), on the phone.</string>
+    <string name="compare_readers">compare the readers</string>
+    <string name="compare_hint">Every reader on this phone, on the same pages (%1$s). Nothing is saved.</string>
+    <string name="compare_stats">%1$s s · %2$d words</string>
     <string name="shortcut_scan">New scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d page</item>
