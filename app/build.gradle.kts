@@ -54,7 +54,9 @@ dependencies {
     implementation("androidx.camera:camera-view:1.4.1")
     implementation("androidx.exifinterface:exifinterface:1.3.7")
     // Tesseract 5 + Leptonica, on the phone (Apache 2.0).
-    implementation("com.github.adaptech-cz.Tesseract4Android:tesseract4android-openmp:4.8.0")
+    // Single-threaded build: the OpenMP one aborted in __kmp_fatal on arm64 (seen under the emulator's
+    // arm translation, 2026-09-24), and Tesseract's own maintainers advise against OpenMP.
+    implementation("com.github.adaptech-cz.Tesseract4Android:tesseract4android:4.8.0")
     // Private build only: Google ML Kit, on the phone (needs Google Play services for the scanner).
     "priveImplementation"("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0")
     "priveImplementation"("com.google.mlkit:text-recognition:16.0.1")
@@ -62,4 +64,12 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
     debugImplementation("androidx.compose.ui:ui-tooling")
+}
+
+// The private build carries ML Kit's native OCR (11 MB): its libraries go in compressed, so the
+// APK stays under the 50 MB a Telegram bot accepts. Android unpacks them at install.
+androidComponents {
+    onVariants(selector().withFlavor("audience" to "prive")) { v ->
+        v.packaging.jniLibs.useLegacyPackaging.set(true)
+    }
 }

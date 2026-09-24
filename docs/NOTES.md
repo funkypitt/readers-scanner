@@ -29,6 +29,19 @@
   (id → path, etag, key). Waits for OCR so only searchable PDFs go up. A server file changed
   since we sent it is never deleted.
 
+## Publishing
+
+- Public: `./gradlew -Pabis=arm64-v8a,armeabi-v7a assemblePubliqueRelease` then
+  `gallaz-sign app-publique-release-unsigned.apk ReadersScanner-vX.Y.Z.apk --release-only` (a package
+  born after 2026-09-11: gallaz key alone). 1.0.0 in the F-Droid repo on 2026-09-24 (commit a3094b1),
+  category Office, no SourceCode line yet (no public GitHub repo), no screenshots (awaiting approval).
+- Tesseract4Android is the single-threaded build: the openmp one aborted in `__kmp_fatal` on arm64
+  (seen under the emulator's arm translation). All native libraries are 16 KB aligned.
+- Private: `-Pabis=arm64-v8a assemblePriveDebug` (38 MB, native libraries compressed for this
+  flavour only, so it goes through the Telegram bot).
+- Emulator trap: `-no-snapshot-save` boots from the old quick-boot snapshot, so pushed photos and
+  app data vanish at every restart; push the test photo again each time.
+
 ## Two builds
 
 - `publique` (F-Droid): free software only. `prive` (`applicationIdSuffix .prive`, name
