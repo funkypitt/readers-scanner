@@ -132,6 +132,12 @@
     <string name="compare_readers">comparer les lecteurs</string>
     <string name="compare_hint">Chaque lecteur de ce téléphone, sur les mêmes pages (%1$s). Rien n\'est enregistré.</string>
     <string name="compare_stats">%1$s s · %2$d mots</string>
+    <string name="hold_still">ne bougez plus…</string>
+    <string name="page_blurred">la page %1$d est floue</string>
+    <string name="retake_short">reprendre</string>
+    <string name="keep">garder</string>
+    <string name="blurred">floue</string>
+    <string name="blurred_page_hint">floue — ⋯ pour la reprendre</string>
     <string name="shortcut_scan">Nouveau scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d page</item>
@@ -152,6 +158,10 @@
     <plurals name="delete_docs_q">
         <item quantity="one">supprimer ce document ?</item>
         <item quantity="other">supprimer ces %d documents ?</item>
+    </plurals>
+    <plurals name="n_blurred">
+        <item quantity="one">%d floue</item>
+        <item quantity="other">%d floues</item>
     </plurals>
     <plurals name="discard_pages_q">
         <item quantity="one">abandonner cette page ?</item>

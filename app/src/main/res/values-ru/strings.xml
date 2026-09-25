@@ -132,6 +132,12 @@
     <string name="compare_readers">сравнить распознавание</string>
     <string name="compare_hint">Каждый распознаватель на этом телефоне, на тех же страницах (%1$s). Ничего не сохраняется.</string>
     <string name="compare_stats">%1$s с · слов: %2$d</string>
+    <string name="hold_still">не двигайтесь…</string>
+    <string name="page_blurred">страница %1$d размыта</string>
+    <string name="retake_short">переснять</string>
+    <string name="keep">оставить</string>
+    <string name="blurred">размыта</string>
+    <string name="blurred_page_hint">размыта — ⋯ чтобы переснять</string>
     <string name="shortcut_scan">Новый скан</string>
     <plurals name="n_pages">
         <item quantity="one">%d страница</item>
@@ -162,6 +168,12 @@
         <item quantity="few">удалить %d документа?</item>
         <item quantity="many">удалить %d документов?</item>
         <item quantity="other">удалить %d документа?</item>
+    </plurals>
+    <plurals name="n_blurred">
+        <item quantity="one">%d размыта</item>
+        <item quantity="few">%d размыты</item>
+        <item quantity="many">%d размыто</item>
+        <item quantity="other">%d размыты</item>
     </plurals>
     <plurals name="discard_pages_q">
         <item quantity="one">отменить %d страницу?</item>

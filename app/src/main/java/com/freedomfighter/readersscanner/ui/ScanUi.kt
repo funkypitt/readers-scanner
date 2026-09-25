@@ -154,8 +154,17 @@ private fun CameraView(a: ScanActivity, app: App, onBack: () -> Unit) {
                 T(stringResource(R.string.camera_needed), Modifier.padding(40.dp).noRippleClickable { a.askAgain() }, color = Color.White, align = TextAlign.Center, maxLines = 6)
             }
         }
-        Small(
-            stringResource(when { a.failed -> R.string.camera_failed; a.live != null -> R.string.page_found; else -> R.string.hold_page }),
+        // A blurred page is said at once, while the sheet is still under the camera.
+        val blurred = a.session.pages.lastOrNull { it.ready && it.blurred && !it.kept }
+        if (blurred != null) {
+            val n = a.session.pages.indexOf(blurred) + 1
+            Row(Modifier.fillMaxWidth().background(Color.White), verticalAlignment = Alignment.CenterVertically) {
+                T(stringResource(R.string.page_blurred, n), Modifier.weight(1f).padding(horizontal = 16.dp, vertical = 12.dp), size = LocalTypo.current.small * 1.1f, color = Color.Black, maxLines = 2)
+                T(stringResource(R.string.retake_short), Modifier.noRippleClickable { tick(); a.retake(blurred) }.background(Color.Black).padding(horizontal = 16.dp, vertical = 12.dp), size = LocalTypo.current.small * 1.1f, color = Color.White, maxLines = 1)
+                T(stringResource(R.string.keep), Modifier.noRippleClickable { blurred.kept = true }.padding(horizontal = 16.dp, vertical = 12.dp), size = LocalTypo.current.small * 1.1f, color = Color.Black, maxLines = 1)
+            }
+        } else Small(
+            stringResource(when { a.failed -> R.string.camera_failed; a.steadying -> R.string.hold_still; a.live != null -> R.string.page_found; else -> R.string.hold_page }),
             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), color = Color.White.copy(alpha = 0.75f), align = TextAlign.Center, maxLines = 2
         )
         // Pages so far | shutter | done
@@ -223,6 +232,7 @@ private fun Thumb(d: Draft, modifier: Modifier) {
 @Composable
 private fun ReviewView(a: ScanActivity, app: App, onCrop: (Draft) -> Unit, onFile: () -> Unit, onBack: () -> Unit) {
     val colors = LocalColors.current
+    val context = LocalContext.current
     val pages = a.session.pages
     val pager = rememberPagerState { pages.size }
     val tick = rememberTick()
@@ -233,7 +243,10 @@ private fun ReviewView(a: ScanActivity, app: App, onCrop: (Draft) -> Unit, onFil
     val current = pages.getOrNull(pager.currentPage.coerceIn(0, pages.size - 1)) ?: return
     Page {
         Column(Modifier.fillMaxSize()) {
-            ScreenTitle(stringResource(R.string.page_n_of, pager.currentPage + 1, pages.size), onBack = onBack)
+            val blurredCount = pages.count { it.ready && it.blurred }
+            ScreenTitle(stringResource(R.string.page_n_of, pager.currentPage + 1, pages.size) +
+                (if (current.ready && current.blurred) " · " + stringResource(R.string.blurred) else "") +
+                (if (blurredCount > 0 && !(current.ready && current.blurred)) " · " + context.resources.getQuantityString(R.plurals.n_blurred, blurredCount, blurredCount) else ""), onBack = onBack)
             // Google's scanner has no language row: the choice is made here instead.
             if (a.external && a.docId == null) {
                 val s by app.prefs.settings.collectAsState()
@@ -275,7 +288,7 @@ private fun ReviewView(a: ScanActivity, app: App, onCrop: (Draft) -> Unit, onFil
                 pages.forEach { if (it !== current && it.filter != current.filter) { it.filter = current.filter; a.session.rerender(it) } }
             } else null,
             MenuItem(stringResource(R.string.import_photos)) { a.importPhotos() },
-            MenuItem(stringResource(R.string.retake)) { a.session.remove(current); a.toCamera() },
+            MenuItem(stringResource(R.string.retake)) { a.retake(current) },
             MenuItem(stringResource(R.string.delete_page)) { a.session.remove(current) }
         ), onDismiss = { menu = false })
     }
@@ -307,6 +320,8 @@ private fun PageImage(d: Draft, modifier: Modifier) {
         bmp?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Fit) }
         if (!d.ready) Box(Modifier.background(colors.bg).border(1.dp, colors.rule).padding(horizontal = 18.dp, vertical = 10.dp)) {
             T(stringResource(if (d.failed) R.string.page_failed else R.string.straightening), size = LocalTypo.current.small, maxLines = 1)
+        } else if (d.blurred) Box(Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp).background(colors.bg).border(1.dp, colors.fg).padding(horizontal = 18.dp, vertical = 10.dp)) {
+            T(stringResource(R.string.blurred_page_hint), size = LocalTypo.current.small, maxLines = 2, align = TextAlign.Center)
         }
     }
 }

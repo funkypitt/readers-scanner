@@ -36,6 +36,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import com.freedomfighter.readersscanner.data.CaptureEngine
 import com.freedomfighter.readersscanner.data.Ocr
 import com.freedomfighter.readersscanner.engine.MlKit
@@ -69,6 +71,39 @@ class ScanActivity : ComponentActivity() {
     var failed by mutableStateOf(false)
     /** Bumped at each shot, for the flash on screen. */
     var shots by mutableIntStateOf(0)
+    /** Between the touch and the shot: waiting for still hands and for the focus. */
+    var steadying by mutableStateOf(false)
+    private var shooting = false
+
+    // --- still hands --------------------------------------------------------------------------
+    // A blurred page is most often a moving phone: the touch on the screen itself shakes it.
+    // The gyroscope says when the hands are still; the shot waits for that (at most 1.5 s).
+    private val sensors by lazy { getSystemService(SENSOR_SERVICE) as android.hardware.SensorManager }
+    @Volatile private var lastMove = 0L
+    private var gravity = FloatArray(3)
+    private var hasMotionSensor = false
+    private val motion = object : android.hardware.SensorEventListener {
+        override fun onSensorChanged(e: android.hardware.SensorEvent) {
+            val v = e.values
+            val moving = if (e.sensor.type == android.hardware.Sensor.TYPE_GYROSCOPE) {
+                kotlin.math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) > 0.10f   // rad/s
+            } else {
+                // no gyroscope: the accelerometer minus a slow estimate of gravity
+                for (i in 0..2) gravity[i] = gravity[i] * 0.9f + v[i] * 0.1f
+                val x = v[0] - gravity[0]; val y = v[1] - gravity[1]; val z = v[2] - gravity[2]
+                kotlin.math.sqrt(x * x + y * y + z * z) > 0.35f   // m/s²
+            }
+            if (moving) lastMove = android.os.SystemClock.elapsedRealtime()
+        }
+        override fun onAccuracyChanged(s: android.hardware.Sensor?, a: Int) {}
+    }
+
+    private fun listenForMotion(on: Boolean) {
+        if (!on) { sensors.unregisterListener(motion); return }
+        val sensor = sensors.getDefaultSensor(android.hardware.Sensor.TYPE_GYROSCOPE) ?: sensors.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER)
+        hasMotionSensor = sensor != null
+        sensor?.let { sensors.registerListener(motion, it, android.hardware.SensorManager.SENSOR_DELAY_GAME) }
+    }
     val folder: String? get() = intent.getStringExtra(EXTRA_FOLDER)
     val docId: String? get() = intent.getStringExtra(EXTRA_DOC)
 
@@ -146,10 +181,11 @@ class ScanActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         orientation.enable()
+        listenForMotion(true)
         if (!granted && ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) { granted = true; if (mode == Mode.CAMERA) bind() }
     }
 
-    override fun onPause() { orientation.disable(); super.onPause() }
+    override fun onPause() { orientation.disable(); listenForMotion(false); super.onPause() }
 
     fun toCamera() {
         if (useGoogleScanner) { openGoogleScanner(); return }
@@ -241,17 +277,65 @@ class ScanActivity : ComponentActivity() {
         live = if (old == null || (0 until 8).maxOf { abs(old[it] - q[it]) } > 0.08f) q else FloatArray(8) { old[it] * 0.55f + q[it] * 0.45f }
     }
 
+    /**
+     * The shutter: waits for still hands (at most 1.5 s), focuses on the page (at most 1.2 s),
+     * then takes the photo. Either wait gives up quietly rather than miss the shot.
+     */
     fun shoot() {
-        val shot = capture ?: return
+        if (capture == null || shooting) return
+        shooting = true
+        steadying = true
+        window.decorView.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
+        lifecycleScope.launch {
+            val start = android.os.SystemClock.elapsedRealtime()
+            lastMove = start   // the touch itself counts as a movement
+            if (hasMotionSensor) {
+                while (android.os.SystemClock.elapsedRealtime() - start < 1500 &&
+                    android.os.SystemClock.elapsedRealtime() - lastMove < 300) kotlinx.coroutines.delay(25)
+            } else kotlinx.coroutines.delay(300)
+            focus()
+            steadying = false
+            take()
+        }
+    }
+
+    /** Focus and exposure on the page (the middle of its outline, or of the view). */
+    private suspend fun focus() {
+        val cam = camera ?: return
+        val view = finder ?: return
+        val q = live
+        val x = if (q != null) (q[0] + q[2] + q[4] + q[6]) / 4f else 0.5f
+        val y = if (q != null) (q[1] + q[3] + q[5] + q[7]) / 4f else 0.5f
+        runCatching {
+            val point = view.meteringPointFactory.createPoint(x * view.width, y * view.height)
+            val action = androidx.camera.core.FocusMeteringAction.Builder(point, androidx.camera.core.FocusMeteringAction.FLAG_AF or androidx.camera.core.FocusMeteringAction.FLAG_AE)
+                .setAutoCancelDuration(4, java.util.concurrent.TimeUnit.SECONDS).build()
+            val future = cam.cameraControl.startFocusAndMetering(action)
+            kotlinx.coroutines.withTimeoutOrNull(1200) {
+                kotlinx.coroutines.suspendCancellableCoroutine<Unit> { cont ->
+                    future.addListener({ if (cont.isActive) cont.resumeWith(Result.success(Unit)) }, ContextCompat.getMainExecutor(this@ScanActivity))
+                }
+            }
+        }
+    }
+
+    private fun take() {
+        val shot = capture ?: run { shooting = false; return }
         val raw = session.rawFile()
         // The live outline is only a fallback, and only when the photo is taken upright like the view.
         val hint = if (rotation == Surface.ROTATION_0) live?.copyOf() else null
         shots++
-        window.decorView.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
         shot.takePicture(ImageCapture.OutputFileOptions.Builder(raw).build(), ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageSavedCallback {
-            override fun onImageSaved(output: ImageCapture.OutputFileResults) { session.addPhoto(raw, hint) }
-            override fun onError(e: ImageCaptureException) { raw.delete(); failed = true }
+            override fun onImageSaved(output: ImageCapture.OutputFileResults) { shooting = false; session.addPhoto(raw, hint) }
+            override fun onError(e: ImageCaptureException) { shooting = false; raw.delete(); failed = true }
         })
+    }
+
+    /** Takes the page again: the next photo goes where this one was. */
+    fun retake(d: com.freedomfighter.readersscanner.scan.Draft) {
+        session.retakeAt = session.pages.indexOf(d).takeIf { it >= 0 }
+        session.remove(d)
+        toCamera()
     }
 
     fun importPhotos() = picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))

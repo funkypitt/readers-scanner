@@ -132,6 +132,12 @@
     <string name="compare_readers">leser vergleichen</string>
     <string name="compare_hint">Jeder leser auf diesem telefon, auf denselben seiten (%1$s). Nichts wird gespeichert.</string>
     <string name="compare_stats">%1$s s · %2$d wörter</string>
+    <string name="hold_still">stillhalten…</string>
+    <string name="page_blurred">seite %1$d ist unscharf</string>
+    <string name="retake_short">neu</string>
+    <string name="keep">behalten</string>
+    <string name="blurred">unscharf</string>
+    <string name="blurred_page_hint">unscharf — ⋯ zum neu aufnehmen</string>
     <string name="shortcut_scan">Neuer Scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d seite</item>
@@ -152,6 +158,10 @@
     <plurals name="delete_docs_q">
         <item quantity="one">dieses dokument löschen?</item>
         <item quantity="other">diese %d dokumente löschen?</item>
+    </plurals>
+    <plurals name="n_blurred">
+        <item quantity="one">%d unscharf</item>
+        <item quantity="other">%d unscharf</item>
     </plurals>
     <plurals name="discard_pages_q">
         <item quantity="one">diese seite verwerfen?</item>

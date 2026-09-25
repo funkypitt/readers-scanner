@@ -31,6 +31,11 @@ class Draft(val key: Int, val src: File, val out: File, filter: Filter) {
     /** Bumped each time the page file is written again, so pictures reload. */
     var stamp by mutableIntStateOf(0)
     var failed by mutableStateOf(false)
+    /** Blur score of the page as made (0 sharp … 1), null until measured. */
+    var blur by mutableStateOf<Float?>(null)
+    val blurred: Boolean get() = (blur ?: 0f) > Sharpness.BLURRED
+    /** The photographer saw the warning and chose to keep the page. */
+    var kept by mutableStateOf(false)
 }
 
 /**
@@ -42,6 +47,8 @@ class Session(private val context: Context, val docId: String?, private val defa
     private val dir = File(context.filesDir, "session").apply { deleteRecursively(); mkdirs() }
     private val work = CoroutineScope(SupervisorJob() + Dispatchers.Default.limitedParallelism(1))
     val pages = mutableStateListOf<Draft>()
+    /** A page being taken again: the next photo takes its place instead of going last. */
+    var retakeAt: Int? = null
     /** When the first photo was taken: the document's date and hour. */
     var created = System.currentTimeMillis(); private set
     private var next = 0
@@ -72,7 +79,9 @@ class Session(private val context: Context, val docId: String?, private val defa
     fun addPhoto(raw: File, hint: FloatArray?, detect: Boolean = true, filter: Filter = defaultFilter): Draft {
         if (pages.isEmpty() && docId == null) created = System.currentTimeMillis()
         val d = newDraft(filter)
-        pages.add(d)
+        val at = retakeAt?.takeIf { it in 0..pages.size }
+        retakeAt = null
+        if (at != null) pages.add(at, d) else pages.add(d)
         work.launch {
             val src = Imaging.prepareSource(raw, d.src)
             raw.delete()
@@ -101,7 +110,9 @@ class Session(private val context: Context, val docId: String?, private val defa
     }
 
     private fun renderNow(d: Draft) {
-        val ok = runCatching { Imaging.renderPage(d.src, d.quad.copyOf(), d.rotation, d.filter, d.out) }.getOrDefault(false)
+        val score = runCatching { Imaging.renderPage(d.src, d.quad.copyOf(), d.rotation, d.filter, d.out) }.getOrNull()
+        val ok = score != null
+        if (ok) d.blur = score
         d.failed = !ok
         d.stamp++
         d.ready = ok

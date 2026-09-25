@@ -29,6 +29,20 @@
   (id → path, etag, key). Waits for OCR so only searchable PDFs go up. A server file changed
   since we sent it is never deleted.
 
+## Blurred pages (1.0.1, user report: "sometimes blurry, hard to spot before all pages are scanned")
+
+- Shutter (`ScanActivity.shoot`): the touch counts as a movement; waits until the gyroscope
+  (accelerometer without one) has been quiet 300 ms, at most 1.5 s ("ne bougez plus…"), then
+  `startFocusAndMetering` AF+AE on the page's centre (at most 1.2 s), then takes the photo.
+- `scan/Sharpness.kt`: Crete et al. 2007 no-reference blur score on the straightened page before
+  its clean-up, at 1400 px across, after a σ≈1 denoise and on edge pixels only (30 % of the
+  99.5th percentile). Threshold 0.45. JVM test on the rendered letter: sharp 0.24, sparse page of
+  big letters 0.40, gauss 1 → 0.34 (kept), gauss 1.7 → 0.50, 2.2 → 0.59 (dim 0.59), motion 11 →
+  0.62. A page that is mostly a photograph may be flagged: "garder" is there for that.
+- Capture screen: "la page N est floue — reprendre / garder" at once; review: "· floue" in the
+  title, a count of blurred pages, and a label under the page. "reprendre" puts the new photo
+  in the old one's place (`Session.retakeAt`).
+
 ## Publishing
 
 - Public: `./gradlew -Pabis=arm64-v8a,armeabi-v7a assemblePubliqueRelease` then

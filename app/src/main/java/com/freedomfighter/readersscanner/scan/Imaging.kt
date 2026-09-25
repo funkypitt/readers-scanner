@@ -69,8 +69,11 @@ object Imaging {
 
     val WHOLE = floatArrayOf(0f, 0f, 1f, 0f, 1f, 1f, 0f, 1f)
 
-    /** Straightens [quad] of [src], turns it by [rotation] degrees and applies [filter]. */
-    fun render(src: Bitmap, quad: FloatArray, rotation: Int, filter: Filter, maxLong: Int = PAGE_LONG): Bitmap {
+    /**
+     * Straightens [quad] of [src], turns it by [rotation] degrees and applies [filter].
+     * [sharpness]: receives the page's blur score (see [Sharpness]), measured before the clean-up.
+     */
+    fun render(src: Bitmap, quad: FloatArray, rotation: Int, filter: Filter, maxLong: Int = PAGE_LONG, sharpness: ((Float) -> Unit)? = null): Bitmap {
         val c = FloatArray(8) { i -> quad[i] * (if (i % 2 == 0) src.width else src.height) }
         val (w, h) = Clean.outputSize(c, src.width, src.height, maxLong)
         val out = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -79,6 +82,7 @@ object Imaging {
         Canvas(out).apply { drawColor(android.graphics.Color.WHITE); drawBitmap(src, m, Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)) }
         val turned = if (rotation % 360 == 0) out else
             Bitmap.createBitmap(out, 0, 0, w, h, Matrix().apply { postRotate(rotation.toFloat()) }, false).also { out.recycle() }
+        sharpness?.invoke(blurOf(turned))
         if (filter != Filter.ORIGINAL) {
             val tw = turned.width; val th = turned.height
             val px = IntArray(tw * th); turned.getPixels(px, 0, tw, 0, 0, tw, th)
@@ -88,14 +92,26 @@ object Imaging {
         return turned
     }
 
-    /** Writes the page file of a source photo. */
-    fun renderPage(srcFile: File, quad: FloatArray, rotation: Int, filter: Filter, out: File): Boolean {
-        val src = decodeUpright(srcFile, SOURCE_LONG) ?: return false
-        val page = render(src, quad, rotation, filter)
+    /** Writes the page file of a source photo; returns its blur score, or null when it failed. */
+    fun renderPage(srcFile: File, quad: FloatArray, rotation: Int, filter: Filter, out: File): Float? {
+        val src = decodeUpright(srcFile, SOURCE_LONG) ?: return null
+        var blur = 0f
+        val page = render(src, quad, rotation, filter) { blur = it }
         src.recycle()
         save(page, out, if (filter == Filter.BW) 80 else 86)
         page.recycle()
-        return true
+        return blur
+    }
+
+    /** The blur score of a page, measured at the width the score was calibrated for. */
+    fun blurOf(page: Bitmap): Float {
+        val s = minOf(1f, Sharpness.WIDTH.toFloat() / page.width)
+        val small = if (s < 1f) Bitmap.createScaledBitmap(page, (page.width * s).roundToInt().coerceAtLeast(1), (page.height * s).roundToInt().coerceAtLeast(1), true) else page
+        val w = small.width; val h = small.height
+        val px = IntArray(w * h); small.getPixels(px, 0, w, 0, 0, w, h)
+        if (small !== page) small.recycle()
+        val gray = IntArray(w * h) { val c = px[it]; ((c shr 16 and 255) * 77 + (c shr 8 and 255) * 150 + (c and 255) * 29) shr 8 }
+        return Sharpness.blur(gray, w, h)
     }
 
     /** The page as the text reader wants it: evened-out grey, same size as the page file. */

@@ -160,6 +160,12 @@ S = {
  "compare_readers": ["compare the readers", "comparer les lecteurs", "leser vergleichen", "comparar los lectores", "comparar os leitores", "сравнить распознавание"],
  "compare_hint": ["Every reader on this phone, on the same pages (%1$s). Nothing is saved.", "Chaque lecteur de ce téléphone, sur les mêmes pages (%1$s). Rien n'est enregistré.", "Jeder leser auf diesem telefon, auf denselben seiten (%1$s). Nichts wird gespeichert.", "Cada lector de este teléfono, en las mismas páginas (%1$s). No se guarda nada.", "Cada leitor deste telemóvel, nas mesmas páginas (%1$s). Nada é guardado.", "Каждый распознаватель на этом телефоне, на тех же страницах (%1$s). Ничего не сохраняется."],
  "compare_stats": ["%1$s s · %2$d words", "%1$s s · %2$d mots", "%1$s s · %2$d wörter", "%1$s s · %2$d palabras", "%1$s s · %2$d palavras", "%1$s с · слов: %2$d"],
+ "hold_still": ["hold still…", "ne bougez plus…", "stillhalten…", "no se mueva…", "não se mexa…", "не двигайтесь…"],
+ "page_blurred": ["page %1$d is blurred", "la page %1$d est floue", "seite %1$d ist unscharf", "la página %1$d está borrosa", "a página %1$d está desfocada", "страница %1$d размыта"],
+ "retake_short": ["retake", "reprendre", "neu", "repetir", "repetir", "переснять"],
+ "keep": ["keep", "garder", "behalten", "conservar", "manter", "оставить"],
+ "blurred": ["blurred", "floue", "unscharf", "borrosa", "desfocada", "размыта"],
+ "blurred_page_hint": ["blurred — ⋯ to take it again", "floue — ⋯ pour la reprendre", "unscharf — ⋯ zum neu aufnehmen", "borrosa — ⋯ para repetirla", "desfocada — ⋯ para a repetir", "размыта — ⋯ чтобы переснять"],
  "shortcut_scan": ["New scan", "Nouveau scan", "Neuer Scan", "Nuevo escaneo", "Nova digitalização", "Новый скан"],
 }
 # quantity -> text, per language
@@ -169,6 +175,7 @@ P = {
  "n_pictures": [{"one": "%d JPEG picture", "other": "%d JPEG pictures"}, {"one": "%d image JPEG", "other": "%d images JPEG"}, {"one": "%d JPEG-bild", "other": "%d JPEG-bilder"}, {"one": "%d imagen JPEG", "other": "%d imágenes JPEG"}, {"one": "%d imagem JPEG", "other": "%d imagens JPEG"}, {"one": "%d изображение JPEG", "few": "%d изображения JPEG", "many": "%d изображений JPEG", "other": "%d изображения JPEG"}],
  "n_selected": [{"one": "%d selected", "other": "%d selected"}, {"one": "%d sélectionné", "other": "%d sélectionnés"}, {"one": "%d ausgewählt", "other": "%d ausgewählt"}, {"one": "%d seleccionado", "other": "%d seleccionados"}, {"one": "%d selecionado", "other": "%d selecionados"}, {"one": "выбран %d", "few": "выбрано %d", "many": "выбрано %d", "other": "выбрано %d"}],
  "delete_docs_q": [{"one": "delete this document?", "other": "delete these %d documents?"}, {"one": "supprimer ce document ?", "other": "supprimer ces %d documents ?"}, {"one": "dieses dokument löschen?", "other": "diese %d dokumente löschen?"}, {"one": "¿eliminar este documento?", "other": "¿eliminar estos %d documentos?"}, {"one": "eliminar este documento?", "other": "eliminar estes %d documentos?"}, {"one": "удалить %d документ?", "few": "удалить %d документа?", "many": "удалить %d документов?", "other": "удалить %d документа?"}],
+ "n_blurred": [{"one": "%d blurred", "other": "%d blurred"}, {"one": "%d floue", "other": "%d floues"}, {"one": "%d unscharf", "other": "%d unscharf"}, {"one": "%d borrosa", "other": "%d borrosas"}, {"one": "%d desfocada", "other": "%d desfocadas"}, {"one": "%d размыта", "few": "%d размыты", "many": "%d размыто", "other": "%d размыты"}],
  "discard_pages_q": [{"one": "discard this page?", "other": "discard these %d pages?"}, {"one": "abandonner cette page ?", "other": "abandonner ces %d pages ?"}, {"one": "diese seite verwerfen?", "other": "diese %d seiten verwerfen?"}, {"one": "¿descartar esta página?", "other": "¿descartar estas %d páginas?"}, {"one": "descartar esta página?", "other": "descartar estas %d páginas?"}, {"one": "отменить %d страницу?", "few": "отменить %d страницы?", "many": "отменить %d страниц?", "other": "отменить %d страницы?"}],
 }
 

@@ -12,8 +12,8 @@ android {
         applicationId = "com.freedomfighter.readersscanner"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
         // Phones, and x86_64 for the emulator; -Pabis=arm64-v8a for a phone-only APK.
         ndk { abiFilters += ((project.findProperty("abis") as String?)?.split(",") ?: listOf("arm64-v8a", "armeabi-v7a", "x86_64")) }
     }

@@ -132,6 +132,12 @@
     <string name="compare_readers">comparar os leitores</string>
     <string name="compare_hint">Cada leitor deste telemóvel, nas mesmas páginas (%1$s). Nada é guardado.</string>
     <string name="compare_stats">%1$s s · %2$d palavras</string>
+    <string name="hold_still">não se mexa…</string>
+    <string name="page_blurred">a página %1$d está desfocada</string>
+    <string name="retake_short">repetir</string>
+    <string name="keep">manter</string>
+    <string name="blurred">desfocada</string>
+    <string name="blurred_page_hint">desfocada — ⋯ para a repetir</string>
     <string name="shortcut_scan">Nova digitalização</string>
     <plurals name="n_pages">
         <item quantity="one">%d página</item>
@@ -152,6 +158,10 @@
     <plurals name="delete_docs_q">
         <item quantity="one">eliminar este documento?</item>
         <item quantity="other">eliminar estes %d documentos?</item>
+    </plurals>
+    <plurals name="n_blurred">
+        <item quantity="one">%d desfocada</item>
+        <item quantity="other">%d desfocadas</item>
     </plurals>
     <plurals name="discard_pages_q">
         <item quantity="one">descartar esta página?</item>

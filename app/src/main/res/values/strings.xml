@@ -132,6 +132,12 @@
     <string name="compare_readers">compare the readers</string>
     <string name="compare_hint">Every reader on this phone, on the same pages (%1$s). Nothing is saved.</string>
     <string name="compare_stats">%1$s s · %2$d words</string>
+    <string name="hold_still">hold still…</string>
+    <string name="page_blurred">page %1$d is blurred</string>
+    <string name="retake_short">retake</string>
+    <string name="keep">keep</string>
+    <string name="blurred">blurred</string>
+    <string name="blurred_page_hint">blurred — ⋯ to take it again</string>
     <string name="shortcut_scan">New scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d page</item>
@@ -152,6 +158,10 @@
     <plurals name="delete_docs_q">
         <item quantity="one">delete this document?</item>
         <item quantity="other">delete these %d documents?</item>
+    </plurals>
+    <plurals name="n_blurred">
+        <item quantity="one">%d blurred</item>
+        <item quantity="other">%d blurred</item>
     </plurals>
     <plurals name="discard_pages_q">
         <item quantity="one">discard this page?</item>
