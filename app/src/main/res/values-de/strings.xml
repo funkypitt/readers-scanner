@@ -138,6 +138,11 @@
     <string name="keep">behalten</string>
     <string name="blurred">unscharf</string>
     <string name="blurred_page_hint">unscharf — ⋯ zum neu aufnehmen</string>
+    <string name="page_format">seitenformat</string>
+    <string name="format_auto">automatisch (jedes blatt)</string>
+    <string name="format_a">A-reihe (A4, A5, A3)</string>
+    <string name="format_letter">US-Letter</string>
+    <string name="format_hint">Eine seite dieses papiers erhält dann ihre genauen proportionen und das PDF seine grösse. Kassenzettel, karten und andere formen behalten ihre eigenen.</string>
     <string name="shortcut_scan">Neuer Scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d seite</item>

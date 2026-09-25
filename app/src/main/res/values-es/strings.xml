@@ -138,6 +138,11 @@
     <string name="keep">conservar</string>
     <string name="blurred">borrosa</string>
     <string name="blurred_page_hint">borrosa — ⋯ para repetirla</string>
+    <string name="page_format">formato de página</string>
+    <string name="format_auto">automático (cualquier hoja)</string>
+    <string name="format_a">serie A (A4, A5, A3)</string>
+    <string name="format_letter">Carta (EE. UU.)</string>
+    <string name="format_hint">Una página de ese papel toma entonces sus proporciones exactas, y el PDF su tamaño. Tickets, tarjetas y otras formas conservan las suyas.</string>
     <string name="shortcut_scan">Nuevo escaneo</string>
     <plurals name="n_pages">
         <item quantity="one">%d página</item>

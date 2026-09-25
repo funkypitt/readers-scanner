@@ -43,7 +43,7 @@ class Draft(val key: Int, val src: File, val out: File, filter: Filter) {
  * one after the other in the background (straighten, clean), so the camera never waits.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class Session(private val context: Context, val docId: String?, private val defaultFilter: Filter) {
+class Session(private val context: Context, val docId: String?, private val defaultFilter: Filter, private val ratio: () -> Double? = { null }) {
     private val dir = File(context.filesDir, "session").apply { deleteRecursively(); mkdirs() }
     private val work = CoroutineScope(SupervisorJob() + Dispatchers.Default.limitedParallelism(1))
     val pages = mutableStateListOf<Draft>()
@@ -110,7 +110,7 @@ class Session(private val context: Context, val docId: String?, private val defa
     }
 
     private fun renderNow(d: Draft) {
-        val score = runCatching { Imaging.renderPage(d.src, d.quad.copyOf(), d.rotation, d.filter, d.out) }.getOrNull()
+        val score = runCatching { Imaging.renderPage(d.src, d.quad.copyOf(), d.rotation, d.filter, d.out, ratio()) }.getOrNull()
         val ok = score != null
         if (ok) d.blur = score
         d.failed = !ok

@@ -138,6 +138,11 @@
     <string name="keep">оставить</string>
     <string name="blurred">размыта</string>
     <string name="blurred_page_hint">размыта — ⋯ чтобы переснять</string>
+    <string name="page_format">формат страниц</string>
+    <string name="format_auto">автоматически (любой лист)</string>
+    <string name="format_a">серия A (A4, A5, A3)</string>
+    <string name="format_letter">US Letter</string>
+    <string name="format_hint">Страница этого формата получает точные пропорции, а PDF — его размер. Чеки, карточки и другие формы сохраняют свои.</string>
     <string name="shortcut_scan">Новый скан</string>
     <plurals name="n_pages">
         <item quantity="one">%d страница</item>

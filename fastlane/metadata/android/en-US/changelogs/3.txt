@@ -1,0 +1,1 @@
+Page format setting (automatic, A series, US Letter): pages of that paper get their exact proportions and the PDF its size. Faint page edges (pale sheet on a pale table) get a second look.

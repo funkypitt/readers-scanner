@@ -138,6 +138,11 @@
     <string name="keep">manter</string>
     <string name="blurred">desfocada</string>
     <string name="blurred_page_hint">desfocada — ⋯ para a repetir</string>
+    <string name="page_format">formato das páginas</string>
+    <string name="format_auto">automático (qualquer folha)</string>
+    <string name="format_a">série A (A4, A5, A3)</string>
+    <string name="format_letter">Carta (EUA)</string>
+    <string name="format_hint">Uma página desse papel fica então com as proporções exatas, e o PDF com o seu tamanho. Talões, cartões e outras formas mantêm as suas.</string>
     <string name="shortcut_scan">Nova digitalização</string>
     <plurals name="n_pages">
         <item quantity="one">%d página</item>

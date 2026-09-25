@@ -43,6 +43,20 @@
   title, a count of blurred pages, and a label under the page. "reprendre" puts the new photo
   in the old one's place (`Session.retakeAt`).
 
+## Page format (1.0.2, user: "force A4 / Letter to help the border detection?")
+
+- Setting AUTO / A (1:√2, the whole A series) / LETTER. Used in `Clean.outputSize`: the page is
+  straightened to the exact ratio, orientation from the photo; kept as estimated when more than
+  8 % off (receipt, card, Letter page with A set). PDF page and Tesseract dpi follow the page's
+  proportions (`Clean.longSideInches`: 11 in for Letter's ratio, else 11.69).
+- NOT used by the detector, after measuring: at 240×320 a 1-px corner error moves the estimated
+  proportions of a real A4 between 0.62 and 0.79, so a format prior could not tell outlines
+  apart; tried as a scoring bell + relaxed support + side completion: +2/−1 on 56 synthetic
+  scenes, and it lost a page auto found. Removed.
+- What did help detection (format-independent): a second Canny pass with low thresholds when the
+  first finds nothing — pale sheet on pale table at 10 grey levels: 0/8 → 2/8. The real limit
+  stays: edges never seen cannot be chosen; Google's learned detector is better there.
+
 ## Publishing
 
 - Public: `./gradlew -Pabis=arm64-v8a,armeabi-v7a assemblePubliqueRelease` then

@@ -55,8 +55,14 @@ object Clean {
      * Output size of the straightened page: as many pixels as the photo really has along the
      * page's longest side (never more than [maxLong]), the other side from [aspect].
      */
-    fun outputSize(c: FloatArray, imgW: Int, imgH: Int, maxLong: Int): Pair<Int, Int> {
-        val a = aspect(c, imgW, imgH)
+    fun outputSize(c: FloatArray, imgW: Int, imgH: Int, maxLong: Int, forced: Double? = null): Pair<Int, Int> {
+        val estimated = aspect(c, imgW, imgH)
+        // A known format: its exact proportions, in the orientation the photo shows — unless the
+        // sheet is plainly something else (a receipt, a card, a Letter page with A set): more than
+        // 8 % off, beyond the estimate's own error on a photo (a few percent), it keeps its shape.
+        val shape = if (estimated > 1) 1 / estimated else estimated
+        val a = if (forced == null || kotlin.math.abs(kotlin.math.ln(shape / forced)) > 0.08) estimated
+            else if (estimated < 1) forced else 1 / forced
         val top = hypot((c[2] - c[0]).toDouble(), (c[3] - c[1]).toDouble())
         val bottom = hypot((c[4] - c[6]).toDouble(), (c[5] - c[7]).toDouble())
         val left = hypot((c[6] - c[0]).toDouble(), (c[7] - c[1]).toDouble())
@@ -67,6 +73,15 @@ object Clean {
         val scale = min(1.0, maxLong / max(w, h))
         w *= scale; h *= scale
         return max(16, w.roundToInt()) to max(16, h.roundToInt())
+    }
+
+    /**
+     * The paper a page stands for, from its proportions: the long side in inches (Letter 11,
+     * otherwise A4's 11.69). Used for the PDF page size and the resolution given to the reader.
+     */
+    fun longSideInches(w: Int, h: Int): Double {
+        val r = minOf(w, h).toDouble() / maxOf(w, h)
+        return if (kotlin.math.abs(r - 8.5 / 11) < 0.012) 11.0 else 11.69
     }
 
     // --- clean-up -----------------------------------------------------------------------------

@@ -163,7 +163,7 @@ class ScanActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(SystemBarStyle.dark(android.graphics.Color.TRANSPARENT), SystemBarStyle.dark(android.graphics.Color.TRANSPARENT))
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        session = Session(applicationContext, docId, app.prefs.settings.value.filter)
+        session = Session(applicationContext, docId, app.prefs.settings.value.filter) { app.prefs.settings.value.format.ratio }
         if (docId != null && intent.getBooleanExtra(EXTRA_REVIEW, false) && session.pages.isNotEmpty()) mode = Mode.REVIEW
         granted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
         finder = PreviewView(this).apply {

@@ -73,9 +73,11 @@ object Imaging {
      * Straightens [quad] of [src], turns it by [rotation] degrees and applies [filter].
      * [sharpness]: receives the page's blur score (see [Sharpness]), measured before the clean-up.
      */
-    fun render(src: Bitmap, quad: FloatArray, rotation: Int, filter: Filter, maxLong: Int = PAGE_LONG, sharpness: ((Float) -> Unit)? = null): Bitmap {
+    fun render(src: Bitmap, quad: FloatArray, rotation: Int, filter: Filter, maxLong: Int = PAGE_LONG, ratio: Double? = null, sharpness: ((Float) -> Unit)? = null): Bitmap {
         val c = FloatArray(8) { i -> quad[i] * (if (i % 2 == 0) src.width else src.height) }
-        val (w, h) = Clean.outputSize(c, src.width, src.height, maxLong)
+        // a whole photo (nothing found, or Google's page) keeps its own shape
+        val forced = if (quad.contentEquals(WHOLE)) null else ratio
+        val (w, h) = Clean.outputSize(c, src.width, src.height, maxLong, forced)
         val out = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val m = Matrix()
         m.setPolyToPoly(c, 0, floatArrayOf(0f, 0f, w.toFloat(), 0f, w.toFloat(), h.toFloat(), 0f, h.toFloat()), 0, 4)
@@ -93,10 +95,10 @@ object Imaging {
     }
 
     /** Writes the page file of a source photo; returns its blur score, or null when it failed. */
-    fun renderPage(srcFile: File, quad: FloatArray, rotation: Int, filter: Filter, out: File): Float? {
+    fun renderPage(srcFile: File, quad: FloatArray, rotation: Int, filter: Filter, out: File, ratio: Double? = null): Float? {
         val src = decodeUpright(srcFile, SOURCE_LONG) ?: return null
         var blur = 0f
-        val page = render(src, quad, rotation, filter) { blur = it }
+        val page = render(src, quad, rotation, filter, ratio = ratio) { blur = it }
         src.recycle()
         save(page, out, if (filter == Filter.BW) 80 else 86)
         page.recycle()

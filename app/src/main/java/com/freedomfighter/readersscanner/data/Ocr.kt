@@ -92,8 +92,8 @@ object Ocr {
         return api
     }
 
-    /** The page's physical size in the PDF comes from its resolution: long side = A4's 11.7 in. */
-    private fun dpi(b: Bitmap) = max(72, (max(b.width, b.height) / 11.69).roundToInt())
+    /** The page's physical size in the PDF comes from its resolution: long side = A4's 11.69 in, or Letter's 11. */
+    private fun dpi(b: Bitmap) = max(72, (max(b.width, b.height) / com.freedomfighter.readersscanner.scan.Clean.longSideInches(b.width, b.height)).roundToInt())
 
     private fun readTesseract(context: Context, doc: Doc) {
         val lang = language(doc)

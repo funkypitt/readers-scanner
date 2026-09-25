@@ -9,6 +9,13 @@ enum class ThemeMode { DARK, LIGHT, SYSTEM }
 enum class FontChoice { SERIF, SANS, MONO }
 enum class TextSize { SMALL, MEDIUM, LARGE }
 enum class Align { LEFT, CENTER }
+/**
+ * The sheets usually scanned. AUTO: any shape, proportions read from the perspective (right to
+ * a few percent). A: the A series (A4, A5, A3 — all 1 : √2). LETTER: US Letter (8.5 × 11 in).
+ * A known format gives every page its exact proportions and the PDF its paper size.
+ */
+enum class PageFormat(val ratio: Double?) { AUTO(null), A(1 / kotlin.math.sqrt(2.0)), LETTER(8.5 / 11) }
+
 /** Who finds and straightens the page (private build: Google's scanner as an alternative). */
 enum class CaptureEngine { READERS, MLKIT }
 /** Who reads the text (private build: Google's recognizer as an alternative). */
@@ -30,6 +37,7 @@ data class Settings(
     val username: String = "",
     val password: String = "",
     val syncOnOpen: Boolean = true,
+    val format: PageFormat = PageFormat.AUTO,
     val capture: CaptureEngine = CaptureEngine.READERS,
     val reader: TextEngine = TextEngine.TESSERACT
 ) {
@@ -60,6 +68,7 @@ class Prefs(context: Context) {
         username = sp.getString("username", "") ?: "",
         password = sp.getString("password", "") ?: "",
         syncOnOpen = sp.getBoolean("sync_on_open", true),
+        format = enumOr(sp.getString("format", null), PageFormat.AUTO),
         capture = enumOr(sp.getString("capture", null), CaptureEngine.READERS),
         reader = enumOr(sp.getString("reader", null), TextEngine.TESSERACT)
     )
@@ -75,6 +84,7 @@ class Prefs(context: Context) {
     fun setFilter(f: Filter) = sp.edit().putString("filter", f.name).apply()
     fun setAccount(server: String, folder: String, username: String, password: String) =
         sp.edit().putString("server", server.trim()).putString("folder", folder.trim().ifBlank { "Scans" }).putString("username", username.trim()).putString("password", password).apply()
+    fun setFormat(f: PageFormat) = sp.edit().putString("format", f.name).apply()
     fun setCapture(e: CaptureEngine) = sp.edit().putString("capture", e.name).apply()
     fun setReader(e: TextEngine) = sp.edit().putString("reader", e.name).apply()
     fun setSyncOnOpen(v: Boolean) = sp.edit().putBoolean("sync_on_open", v).apply()

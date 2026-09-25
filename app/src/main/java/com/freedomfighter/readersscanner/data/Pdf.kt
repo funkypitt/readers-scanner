@@ -62,7 +62,8 @@ object Pdf {
             val b = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             BitmapFactory.decodeFile(f.path, b)
             val w = b.outWidth.coerceAtLeast(1); val h = b.outHeight.coerceAtLeast(1)
-            val scale = 842.0 / maxOf(w, h)
+            // A4's long side (842 pt), or Letter's (792 pt) for a page with Letter proportions
+            val scale = com.freedomfighter.readersscanner.scan.Clean.longSideInches(w, h) * 72.0 / maxOf(w, h)
             val pwD = w * scale; val phD = h * scale
             val pw = num(pwD); val ph = num(phD)
             val page = 5 + i * 3; val content = page + 1; val image = page + 2

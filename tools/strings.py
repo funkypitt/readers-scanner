@@ -166,6 +166,11 @@ S = {
  "keep": ["keep", "garder", "behalten", "conservar", "manter", "оставить"],
  "blurred": ["blurred", "floue", "unscharf", "borrosa", "desfocada", "размыта"],
  "blurred_page_hint": ["blurred — ⋯ to take it again", "floue — ⋯ pour la reprendre", "unscharf — ⋯ zum neu aufnehmen", "borrosa — ⋯ para repetirla", "desfocada — ⋯ para a repetir", "размыта — ⋯ чтобы переснять"],
+ "page_format": ["page format", "format des pages", "seitenformat", "formato de página", "formato das páginas", "формат страниц"],
+ "format_auto": ["automatic (any sheet)", "automatique (toute feuille)", "automatisch (jedes blatt)", "automático (cualquier hoja)", "automático (qualquer folha)", "автоматически (любой лист)"],
+ "format_a": ["A series (A4, A5, A3)", "série A (A4, A5, A3)", "A-reihe (A4, A5, A3)", "serie A (A4, A5, A3)", "série A (A4, A5, A3)", "серия A (A4, A5, A3)"],
+ "format_letter": ["US Letter", "Letter (États-Unis)", "US-Letter", "Carta (EE. UU.)", "Carta (EUA)", "US Letter"],
+ "format_hint": ["A page of that paper then gets its exact proportions, and the PDF its size. Receipts, cards and other shapes keep their own.", "Une page de ce papier prend alors ses proportions exactes, et le PDF sa taille. Tickets, cartes et autres formes gardent les leurs.", "Eine seite dieses papiers erhält dann ihre genauen proportionen und das PDF seine grösse. Kassenzettel, karten und andere formen behalten ihre eigenen.", "Una página de ese papel toma entonces sus proporciones exactas, y el PDF su tamaño. Tickets, tarjetas y otras formas conservan las suyas.", "Uma página desse papel fica então com as proporções exatas, e o PDF com o seu tamanho. Talões, cartões e outras formas mantêm as suas.", "Страница этого формата получает точные пропорции, а PDF — его размер. Чеки, карточки и другие формы сохраняют свои."],
  "shortcut_scan": ["New scan", "Nouveau scan", "Neuer Scan", "Nuevo escaneo", "Nova digitalização", "Новый скан"],
 }
 # quantity -> text, per language

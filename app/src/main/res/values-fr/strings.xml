@@ -138,6 +138,11 @@
     <string name="keep">garder</string>
     <string name="blurred">floue</string>
     <string name="blurred_page_hint">floue — ⋯ pour la reprendre</string>
+    <string name="page_format">format des pages</string>
+    <string name="format_auto">automatique (toute feuille)</string>
+    <string name="format_a">série A (A4, A5, A3)</string>
+    <string name="format_letter">Letter (États-Unis)</string>
+    <string name="format_hint">Une page de ce papier prend alors ses proportions exactes, et le PDF sa taille. Tickets, cartes et autres formes gardent les leurs.</string>
     <string name="shortcut_scan">Nouveau scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d page</item>

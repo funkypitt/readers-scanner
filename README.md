@@ -23,6 +23,8 @@ folder (kDrive, Nextcloud…) if you want. No account, no cloud OCR, black and w
 - **WebDAV**: a copy of each PDF goes to your server, in a subfolder named after its folder.
   Renames, moves and deletions follow. Credentials import from a Reader's credentials file,
   including one exported by Reader's Notes, Recorder, Tasks or Calendar.
+- Page format (automatic, A series, US Letter): a page of that paper gets its exact proportions
+  and the PDF its size; other shapes keep theirs.
 - Optional "best" models per language, downloaded from the settings, for more accurate reading.
 - Six languages for the app (en, fr, de, es, pt, ru). No analytics, backup off.
 

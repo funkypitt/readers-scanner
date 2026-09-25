@@ -24,10 +24,22 @@ object Detector {
     /** Corners as x0,y0 … x3,y3: top-left, top-right, bottom-right, bottom-left, in pixels. */
     class Found(val corners: FloatArray, val support: Float)
 
+    /**
+     * No preference for a paper format here, on purpose (measured 2026-09-25): at the few
+     * hundred pixels searched, a one-pixel error on the corners moves the estimated proportions
+     * of a real A4 sheet between 0.62 and 0.79 — A4 is 0.707, Letter 0.773 — so a format cannot
+     * tell outlines apart. The format is used after, to give the page its exact proportions.
+     */
     fun detect(gray: IntArray, w: Int, h: Int): Found? {
         if (w < 32 || h < 32) return null
         val blurred = blur(gray, w, h)
-        val edges = canny(blurred, w, h)
+        // First the page's clear edges; if they give nothing, a second look at faint ones
+        // (a pale sheet on a pale table), where a known format helps pick the sheet out.
+        return search(blurred, w, h, faint = false) ?: search(blurred, w, h, faint = true)
+    }
+
+    private fun search(blurred: IntArray, w: Int, h: Int, faint: Boolean): Found? {
+        val edges = canny(blurred, w, h, faint)
         val near = dilate(edges, w, h)
         val candidates = ArrayList<FloatArray>()
         candidates += fromOutlines(near, w, h)
@@ -68,7 +80,7 @@ object Detector {
     }
 
     /** Canny with thresholds taken from the picture itself. Returns 1 on edge pixels. */
-    internal fun canny(g: IntArray, w: Int, h: Int): ByteArray {
+    internal fun canny(g: IntArray, w: Int, h: Int, faint: Boolean = false): ByteArray {
         val mag = IntArray(w * h)
         val dir = ByteArray(w * h)
         for (y in 1 until h - 1) for (x in 1 until w - 1) {
@@ -105,8 +117,9 @@ object Detector {
         var acc = 0; var high = 2047
         val target = (count * 0.80).toInt()
         for (v in 0 until 2048) { acc += hist[v]; if (acc >= target) { high = v; break } }
-        high = max(high, 60)
-        val low = max((high * 0.4).toInt(), 24)
+        // faint: a step of about ten grey levels is enough (paper on a pale table)
+        high = if (faint) max(min(high, 48), 28) else max(high, 60)
+        val low = if (faint) max((high * 0.45).toInt(), 14) else max((high * 0.4).toInt(), 24)
         val out = ByteArray(w * h)
         val stack = IntArray(w * h)
         var sp = 0
@@ -346,24 +359,29 @@ object Detector {
      * Share of each side that runs along found edges (its ends left out: corners are often
      * rounded, dog-eared or under a thumb). Null when a side is mostly unsupported.
      */
-    private fun support(near: ByteArray, w: Int, h: Int, c: FloatArray): Double? {
-        var total = 0.0; var weakest = 1.0
-        for (k in 0 until 4) {
-            val ax = c[2 * k]; val ay = c[2 * k + 1]; val bx = c[(2 * k + 2) % 8]; val by = c[(2 * k + 3) % 8]
-            val len = hypot((bx - ax).toDouble(), (by - ay).toDouble())
-            val n = max(8, len.toInt())
-            var hit = 0; var seen = 0
-            for (s in 0..n) {
-                val t = 0.08 + 0.84 * s / n
-                val x = (ax + (bx - ax) * t).roundToInt(); val y = (ay + (by - ay) * t).roundToInt()
-                if (x < 0 || y < 0 || x >= w || y >= h) continue   // off the picture: neither for nor against
-                seen++
-                if (near[y * w + x].toInt() != 0) hit++
-            }
-            val f = if (seen < n / 3) 0.5 else hit.toDouble() / seen
-            weakest = min(weakest, f); total += f
+    /** Share of each side (0 top, 1 right, 2 bottom, 3 left) that runs along found edges, ends left out. */
+    private fun sideCoverages(near: ByteArray, w: Int, h: Int, c: FloatArray): DoubleArray = DoubleArray(4) { k ->
+        val ax = c[2 * k]; val ay = c[2 * k + 1]; val bx = c[(2 * k + 2) % 8]; val by = c[(2 * k + 3) % 8]
+        val len = hypot((bx - ax).toDouble(), (by - ay).toDouble())
+        val n = max(8, len.toInt())
+        var hit = 0; var seen = 0
+        for (s in 0..n) {
+            val t = 0.08 + 0.84 * s / n
+            val x = (ax + (bx - ax) * t).roundToInt(); val y = (ay + (by - ay) * t).roundToInt()
+            if (x < 0 || y < 0 || x >= w || y >= h) continue   // off the picture: neither for nor against
+            seen++
+            if (near[y * w + x].toInt() != 0) hit++
         }
-        val mean = total / 4
+        if (seen < n / 3) 0.5 else hit.toDouble() / seen
+    }
+
+    /**
+     * Share of the sides that runs along found edges (corners are often rounded, dog-eared or
+     * under a thumb). Null when a side is mostly unsupported.
+     */
+    private fun support(near: ByteArray, w: Int, h: Int, c: FloatArray): Double? {
+        val cov = sideCoverages(near, w, h, c)
+        val mean = cov.average(); val weakest = cov.min()
         return if (weakest >= 0.45 && mean >= 0.65) mean else null
     }
 }

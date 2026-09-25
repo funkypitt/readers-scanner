@@ -84,6 +84,7 @@ import com.freedomfighter.readersscanner.data.Doc
 import com.freedomfighter.readersscanner.data.Filter
 import com.freedomfighter.readersscanner.data.FontChoice
 import com.freedomfighter.readersscanner.data.CaptureEngine
+import com.freedomfighter.readersscanner.data.PageFormat
 import com.freedomfighter.readersscanner.data.Ocr
 import com.freedomfighter.readersscanner.data.Reader
 import com.freedomfighter.readersscanner.data.TextEngine
@@ -683,6 +684,11 @@ fun SettingsScreen(nav: Nav, app: App) {
                     pick.launch(arrayOf("application/json", "text/plain", "application/octet-stream", "*/*"))
                 }
                 Rule(Modifier.padding(vertical = 8.dp))
+                TextRow(stringResource(when (s.format) { PageFormat.AUTO -> R.string.format_auto; PageFormat.A -> R.string.format_a; PageFormat.LETTER -> R.string.format_letter }),
+                    secondary = stringResource(R.string.page_format)) {
+                    app.prefs.setFormat(PageFormat.entries[(s.format.ordinal + 1) % PageFormat.entries.size])
+                }
+                Small(stringResource(R.string.format_hint), Modifier.padding(horizontal = rowPadH).padding(bottom = 8.dp), maxLines = 6)
                 TextRow(filterName(s.filter), secondary = stringResource(R.string.new_pages_look)) { app.prefs.setFilter(Filter.entries[(s.filter.ordinal + 1) % Filter.entries.size]) }
                 TextRow(OcrLanguages.name(s.ocrLanguage), secondary = stringResource(R.string.text_language)) {
                     val all = OcrLanguages.codes

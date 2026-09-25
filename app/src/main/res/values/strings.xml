@@ -138,6 +138,11 @@
     <string name="keep">keep</string>
     <string name="blurred">blurred</string>
     <string name="blurred_page_hint">blurred — ⋯ to take it again</string>
+    <string name="page_format">page format</string>
+    <string name="format_auto">automatic (any sheet)</string>
+    <string name="format_a">A series (A4, A5, A3)</string>
+    <string name="format_letter">US Letter</string>
+    <string name="format_hint">A page of that paper then gets its exact proportions, and the PDF its size. Receipts, cards and other shapes keep their own.</string>
     <string name="shortcut_scan">New scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d page</item>
