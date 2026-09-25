@@ -51,7 +51,8 @@ object Ocr {
                 val doc = Store.doc(id) ?: continue
                 if (doc.ocr != OcrState.PENDING) continue
                 runCatching {
-                    if (engine() == TextEngine.MLKIT && MlKit.available) readMlKit(doc) else readTesseract(app, doc)
+                    // ML Kit reads the Latin script only: Russian always goes to Tesseract
+                    if (engine() == TextEngine.MLKIT && MlKit.available && language(doc) != "rus") readMlKit(doc) else readTesseract(app, doc)
                 }.onFailure { Store.ocrFailed(doc.id, doc.rev) }
                 _working.value = null
                 onDone?.invoke()

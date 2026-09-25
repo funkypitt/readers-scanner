@@ -125,6 +125,46 @@ class Nav {
 }
 
 // ---------------------------------------------------------------------------------------------
+// First start: Google's engines or the free ones, said plainly
+// ---------------------------------------------------------------------------------------------
+
+@Composable
+fun EngineChoiceScreen(app: App) {
+    val context = LocalContext.current
+    val colors = LocalColors.current
+    val typo = LocalTypo.current
+    val google = remember { MlKit.playServices(context) }
+    Page {
+        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars).verticalScroll(rememberScrollState())) {
+            T(stringResource(R.string.choice_title), Modifier.padding(horizontal = rowPadH).padding(top = 36.dp, bottom = 8.dp), size = typo.title * 1.2f)
+            Small(stringResource(R.string.choice_intro), Modifier.padding(horizontal = rowPadH).padding(bottom = 20.dp), maxLines = 6)
+            Rule()
+            Choice(
+                title = stringResource(R.string.choice_google),
+                body = stringResource(if (google) R.string.choice_google_body else R.string.choice_google_missing),
+                enabled = google
+            ) { app.prefs.chooseEngines(google = true) }
+            Rule()
+            Choice(title = stringResource(R.string.choice_free), body = stringResource(R.string.choice_free_body), enabled = true) { app.prefs.chooseEngines(google = false) }
+            Rule()
+            Small(stringResource(R.string.choice_later), Modifier.padding(horizontal = rowPadH, vertical = 20.dp), maxLines = 3)
+            Box(Modifier.windowInsetsPadding(WindowInsets.navigationBars))
+        }
+    }
+}
+
+@Composable
+private fun Choice(title: String, body: String, enabled: Boolean, onClick: () -> Unit) {
+    val colors = LocalColors.current
+    val tick = rememberTick()
+    Column(Modifier.fillMaxWidth().noRippleClickable(enabled = enabled) { tick(); onClick() }.padding(horizontal = rowPadH, vertical = 22.dp)) {
+        T(title, size = LocalTypo.current.title, color = if (enabled) colors.fg else colors.dim, maxLines = 2)
+        T(body, Modifier.padding(top = 8.dp), size = LocalTypo.current.small, color = colors.dim, lineHeightMul = 1.4f)
+        if (enabled) T("→  " + stringResource(R.string.choice_this_one), Modifier.padding(top = 14.dp), size = LocalTypo.current.small * 1.1f, maxLines = 1)
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
 // Home: big folders, the catch-all first; "new scan" under the thumb
 // ---------------------------------------------------------------------------------------------
 
@@ -377,7 +417,7 @@ fun DocMenu(nav: Nav, app: App, d: Doc, onDismiss: () -> Unit) {
         MenuItem(stringResource(R.string.move_to)) { shown = false; moving = true },
         MenuItem(stringResource(R.string.edit_pages)) { ScanActivity.start(context, doc = d.id, review = true) },
         MenuItem(stringResource(R.string.read_again)) { shown = false; reading = true },
-        *(if (MlKit.available) arrayOf(MenuItem(stringResource(R.string.compare_readers)) { nav.push(Screen.Compare(d.id)) }) else emptyArray()),
+        *(if (com.freedomfighter.readersscanner.BuildConfig.FLAVOR == "prive") arrayOf(MenuItem(stringResource(R.string.compare_readers)) { nav.push(Screen.Compare(d.id)) }) else emptyArray()),
         MenuItem(stringResource(R.string.delete)) { shown = false; deleting = true }
     ), onDismiss = { shown = false; close() })
     if (renaming) TextPrompt(stringResource(R.string.rename_hint), initial = d.name.orEmpty(), selectAll = true, allowEmpty = true, capitalize = true,
@@ -437,7 +477,7 @@ fun DocScreen(nav: Nav, app: App, id: String) {
         Column(Modifier.fillMaxSize()) {
             ScreenTitleActions(d.name ?: whenLabel(context, d.created), onBack = { nav.pop() }, actions = listOf("⋯" to { menu = true }))
             val status = statusLabel(context, d, working)
-            val readBy = if (MlKit.available || d.readBy == Reader.TESSERACT_BEST.key) readerName(context, d.readBy) else null
+            val readBy = readerName(context, d.readBy)
             val info = listOfNotNull(whenLabel(context, d.created), context.resources.getQuantityString(R.plurals.n_pages, d.pages.size, d.pages.size), OcrLanguages.name(d.lang), readBy, status).joinToString(" · ")
             Small(info, Modifier.padding(horizontal = rowPadH, vertical = 10.dp), maxLines = 2)
             if (showText) {

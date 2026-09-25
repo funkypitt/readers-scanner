@@ -114,7 +114,7 @@
     <string name="haptics">vibration on touch</string>
     <string name="on">on</string>
     <string name="off">off</string>
-    <string name="credits">Text recognition: Tesseract 5 and Leptonica (Apache 2.0) through Tesseract4Android; language models tessdata_fast (Apache 2.0).</string>
+    <string name="credits">Text recognition: Tesseract 5 and Leptonica (Apache 2.0) through Tesseract4Android, language models tessdata (Apache 2.0); or Google ML Kit (Google\'s terms), if chosen.</string>
     <string name="best_hint">More accurate reading: the "best" model of a language, downloaded once (slower, and larger).</string>
     <string name="best_download">fast model — download the best one (%1$d MB)</string>
     <string name="best_downloading">downloading the best model… %1$d %%</string>
@@ -128,7 +128,7 @@
     <string name="engine_tesseract">Tesseract (free software)</string>
     <string name="capture_engine">finding the page</string>
     <string name="text_engine">reading the text</string>
-    <string name="google_hint">Private build: Google\'s ML Kit can replace either step, to compare. Its scanner needs Google Play services and shows its own screen (the language is then chosen in the review). Its reader knows the Latin script only (no Russian), on the phone.</string>
+    <string name="google_hint">Each step can use Google\'s ML Kit or the free engines. ML Kit\'s scanner needs Google Play services and shows its own screen (the language is then chosen in the review); its reader knows the Latin script only (Russian is read by Tesseract). It sends usage statistics to Google, never your documents.</string>
     <string name="compare_readers">compare the readers</string>
     <string name="compare_hint">Every reader on this phone, on the same pages (%1$s). Nothing is saved.</string>
     <string name="compare_stats">%1$s s · %2$d words</string>
@@ -143,6 +143,15 @@
     <string name="format_a">A series (A4, A5, A3)</string>
     <string name="format_letter">US Letter</string>
     <string name="format_hint">A page of that paper then gets its exact proportions, and the PDF its size. Receipts, cards and other shapes keep their own.</string>
+    <string name="choice_title">Which engine?</string>
+    <string name="choice_intro">Two ways of finding the page and reading its text. Both work on the phone: your documents are never sent to be read.</string>
+    <string name="choice_google">Google ML Kit (recommended)</string>
+    <string name="choice_google_body">Finds and straightens pages most surely, on any background, and reads text very well. Closed Google code: it needs Google Play services and sends usage statistics to Google (not your documents). Latin script only: Russian is read by Tesseract.</string>
+    <string name="choice_google_missing">Not available on this phone: Google Play services are missing.</string>
+    <string name="choice_free">Open source</string>
+    <string name="choice_free_body">The app\'s own page finder and Tesseract: free software, nothing goes to Google, seven languages. Less sure of the page on pale backgrounds (the corners are easy to adjust), blurred shots are flagged at once.</string>
+    <string name="choice_later">You can change this at any time in the settings.</string>
+    <string name="choice_this_one">this one</string>
     <string name="shortcut_scan">New scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d page</item>

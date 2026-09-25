@@ -114,7 +114,7 @@
     <string name="haptics">вибрация при касании</string>
     <string name="on">вкл</string>
     <string name="off">выкл</string>
-    <string name="credits">Распознавание текста: Tesseract 5 и Leptonica (Apache 2.0) через Tesseract4Android; языковые модели tessdata_fast (Apache 2.0).</string>
+    <string name="credits">Распознавание текста: Tesseract 5 и Leptonica (Apache 2.0) через Tesseract4Android, языковые модели tessdata (Apache 2.0); или Google ML Kit (условия Google), если выбран.</string>
     <string name="best_hint">Более точное чтение: «лучшая» модель языка, загружается один раз (медленнее и больше).</string>
     <string name="best_download">быстрая модель — загрузить лучшую (%1$d МБ)</string>
     <string name="best_downloading">загрузка лучшей модели… %1$d %%</string>
@@ -128,7 +128,7 @@
     <string name="engine_tesseract">Tesseract (свободное ПО)</string>
     <string name="capture_engine">поиск страницы</string>
     <string name="text_engine">чтение текста</string>
-    <string name="google_hint">Частная версия: ML Kit от Google может заменить любой из шагов для сравнения. Его сканер требует сервисов Google Play и показывает свой экран (язык тогда выбирается при просмотре). Его распознавание знает только латиницу (без русского), на телефоне.</string>
+    <string name="google_hint">Каждый шаг может использовать ML Kit от Google или свободные движки. Сканеру ML Kit нужны сервисы Google Play, у него свой экран (язык тогда выбирается при просмотре); распознавание знает только латиницу (русский читает Tesseract). Отправляет в Google статистику использования, но не ваши документы.</string>
     <string name="compare_readers">сравнить распознавание</string>
     <string name="compare_hint">Каждый распознаватель на этом телефоне, на тех же страницах (%1$s). Ничего не сохраняется.</string>
     <string name="compare_stats">%1$s с · слов: %2$d</string>
@@ -143,6 +143,15 @@
     <string name="format_a">серия A (A4, A5, A3)</string>
     <string name="format_letter">US Letter</string>
     <string name="format_hint">Страница этого формата получает точные пропорции, а PDF — его размер. Чеки, карточки и другие формы сохраняют свои.</string>
+    <string name="choice_title">Какой движок?</string>
+    <string name="choice_intro">Два способа найти страницу и прочитать текст. Оба работают на телефоне: ваши документы никуда не отправляются.</string>
+    <string name="choice_google">Google ML Kit (рекомендуется)</string>
+    <string name="choice_google_body">Надёжнее всего находит и выравнивает страницы на любом фоне и отлично читает текст. Закрытый код Google: нужны сервисы Google Play, отправляет в Google статистику использования (не ваши документы). Только латиница: русский читает Tesseract.</string>
+    <string name="choice_google_missing">Недоступно на этом телефоне: нет сервисов Google Play.</string>
+    <string name="choice_free">Свободное ПО</string>
+    <string name="choice_free_body">Собственный поиск страницы и Tesseract: свободное ПО, ничего не уходит в Google, семь языков. Менее уверен на светлом фоне (углы легко поправить), размытые снимки сразу помечаются.</string>
+    <string name="choice_later">Это можно изменить в любой момент в настройках.</string>
+    <string name="choice_this_one">этот</string>
     <string name="shortcut_scan">Новый скан</string>
     <plurals name="n_pages">
         <item quantity="one">%d страница</item>

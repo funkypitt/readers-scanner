@@ -114,7 +114,7 @@
     <string name="haptics">vibración al tocar</string>
     <string name="on">sí</string>
     <string name="off">no</string>
-    <string name="credits">Reconocimiento de texto: Tesseract 5 y Leptonica (Apache 2.0) mediante Tesseract4Android; modelos de idioma tessdata_fast (Apache 2.0).</string>
+    <string name="credits">Reconocimiento de texto: Tesseract 5 y Leptonica (Apache 2.0) mediante Tesseract4Android, modelos de idioma tessdata (Apache 2.0); o Google ML Kit (condiciones de Google), si se elige.</string>
     <string name="best_hint">Lectura más precisa: el modelo «mejor» de un idioma, descargado una vez (más lento y más grande).</string>
     <string name="best_download">modelo rápido — descargar el mejor (%1$d MB)</string>
     <string name="best_downloading">descargando el mejor modelo… %1$d %%</string>
@@ -128,7 +128,7 @@
     <string name="engine_tesseract">Tesseract (software libre)</string>
     <string name="capture_engine">encontrar la página</string>
     <string name="text_engine">leer el texto</string>
-    <string name="google_hint">Versión privada: ML Kit de Google puede sustituir cualquiera de los dos pasos, para comparar. Su escáner necesita los servicios de Google Play y muestra su propia pantalla (el idioma se elige entonces en la revisión). Su lector solo conoce el alfabeto latino (no el ruso), en el teléfono.</string>
+    <string name="google_hint">Cada paso puede usar ML Kit de Google o los motores libres. El escáner de ML Kit necesita los servicios de Google Play y muestra su propia pantalla (el idioma se elige entonces en la revisión); su lector solo conoce el alfabeto latino (el ruso lo lee Tesseract). Envía estadísticas de uso a Google, nunca sus documentos.</string>
     <string name="compare_readers">comparar los lectores</string>
     <string name="compare_hint">Cada lector de este teléfono, en las mismas páginas (%1$s). No se guarda nada.</string>
     <string name="compare_stats">%1$s s · %2$d palabras</string>
@@ -143,6 +143,15 @@
     <string name="format_a">serie A (A4, A5, A3)</string>
     <string name="format_letter">Carta (EE. UU.)</string>
     <string name="format_hint">Una página de ese papel toma entonces sus proporciones exactas, y el PDF su tamaño. Tickets, tarjetas y otras formas conservan las suyas.</string>
+    <string name="choice_title">¿Qué motor?</string>
+    <string name="choice_intro">Dos maneras de encontrar la página y leer su texto. Las dos trabajan en el teléfono: sus documentos nunca se envían para leerlos.</string>
+    <string name="choice_google">Google ML Kit (recomendado)</string>
+    <string name="choice_google_body">Encuentra y endereza las páginas con más seguridad, sobre cualquier fondo, y lee muy bien el texto. Código cerrado de Google: necesita los servicios de Google Play y envía estadísticas de uso a Google (no sus documentos). Solo alfabeto latino: el ruso lo lee Tesseract.</string>
+    <string name="choice_google_missing">No disponible en este teléfono: faltan los servicios de Google Play.</string>
+    <string name="choice_free">Software libre</string>
+    <string name="choice_free_body">El detector de página de la app y Tesseract: software libre, nada va a Google, siete idiomas. Menos seguro de la página sobre fondo claro (las esquinas se corrigen fácilmente), las tomas borrosas se señalan al momento.</string>
+    <string name="choice_later">Puede cambiarlo en cualquier momento en los ajustes.</string>
+    <string name="choice_this_one">este</string>
     <string name="shortcut_scan">Nuevo escaneo</string>
     <plurals name="n_pages">
         <item quantity="one">%d página</item>

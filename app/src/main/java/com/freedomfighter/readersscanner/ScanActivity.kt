@@ -130,7 +130,7 @@ class ScanActivity : ComponentActivity() {
         Thread { uris.forEach { session.addFromUri(it, scanned = true) }; runOnUiThread { toReview() } }.start()
     }
 
-    private val useGoogleScanner get() = MlKit.available && app.prefs.settings.value.capture == CaptureEngine.MLKIT
+    private val useGoogleScanner get() = MlKit.available && app.prefs.settings.value.capture == CaptureEngine.MLKIT && MlKit.playServices(this)
 
     private fun openGoogleScanner() {
         mode = Mode.EXTERNAL

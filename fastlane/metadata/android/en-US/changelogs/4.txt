@@ -1,0 +1,1 @@
+Engine chosen at first start: Google ML Kit (now in the public app) or the free engines. Russian is always read by Tesseract.

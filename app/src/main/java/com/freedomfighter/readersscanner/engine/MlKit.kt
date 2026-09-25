@@ -17,6 +17,12 @@ import kotlinx.coroutines.tasks.await
 object MlKit : GoogleEngines {
     override val available = true
 
+    /** Google Play services present and working: the document scanner cannot run without them. */
+    fun playServices(context: android.content.Context): Boolean = runCatching {
+        com.google.android.gms.common.GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) ==
+            com.google.android.gms.common.ConnectionResult.SUCCESS
+    }.getOrDefault(false)
+
     private val recognizer by lazy { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
 
     override suspend fun read(bitmap: Bitmap): ReadPage {

@@ -114,7 +114,7 @@
     <string name="haptics">vibration beim tippen</string>
     <string name="on">ein</string>
     <string name="off">aus</string>
-    <string name="credits">Texterkennung: Tesseract 5 und Leptonica (Apache 2.0) über Tesseract4Android; sprachmodelle tessdata_fast (Apache 2.0).</string>
+    <string name="credits">Texterkennung: Tesseract 5 und Leptonica (Apache 2.0) über Tesseract4Android, sprachmodelle tessdata (Apache 2.0); oder Google ML Kit (bedingungen von Google), falls gewählt.</string>
     <string name="best_hint">Genaueres lesen: das „beste“ modell einer sprache, einmal heruntergeladen (langsamer und grösser).</string>
     <string name="best_download">schnelles modell — das beste herunterladen (%1$d MB)</string>
     <string name="best_downloading">bestes modell wird geladen… %1$d %%</string>
@@ -128,7 +128,7 @@
     <string name="engine_tesseract">Tesseract (freie software)</string>
     <string name="capture_engine">seite finden</string>
     <string name="text_engine">text lesen</string>
-    <string name="google_hint">Private version: Googles ML Kit kann jeden schritt ersetzen, zum vergleichen. Sein scanner braucht die Google-Play-dienste und zeigt einen eigenen bildschirm (die sprache wird dann in der durchsicht gewählt). Sein leser kennt nur die lateinische schrift (kein russisch), auf dem telefon.</string>
+    <string name="google_hint">Jeder schritt kann Googles ML Kit oder die freien engines nutzen. Der scanner von ML Kit braucht die Google-Play-dienste und zeigt einen eigenen bildschirm (die sprache wird dann in der durchsicht gewählt); sein leser kennt nur die lateinische schrift (russisch liest Tesseract). Er sendet nutzungsstatistiken an Google, nie ihre dokumente.</string>
     <string name="compare_readers">leser vergleichen</string>
     <string name="compare_hint">Jeder leser auf diesem telefon, auf denselben seiten (%1$s). Nichts wird gespeichert.</string>
     <string name="compare_stats">%1$s s · %2$d wörter</string>
@@ -143,6 +143,15 @@
     <string name="format_a">A-reihe (A4, A5, A3)</string>
     <string name="format_letter">US-Letter</string>
     <string name="format_hint">Eine seite dieses papiers erhält dann ihre genauen proportionen und das PDF seine grösse. Kassenzettel, karten und andere formen behalten ihre eigenen.</string>
+    <string name="choice_title">Welche engine?</string>
+    <string name="choice_intro">Zwei wege, die seite zu finden und ihren text zu lesen. Beide arbeiten auf dem telefon: ihre dokumente werden nie zum lesen verschickt.</string>
+    <string name="choice_google">Google ML Kit (empfohlen)</string>
+    <string name="choice_google_body">Findet und begradigt seiten am sichersten, auf jedem untergrund, und liest text sehr gut. Geschlossener Google-code: braucht die Google-Play-dienste und sendet nutzungsstatistiken an Google (nicht ihre dokumente). Nur lateinische schrift: russisch liest Tesseract.</string>
+    <string name="choice_google_missing">Auf diesem telefon nicht verfügbar: die Google-Play-dienste fehlen.</string>
+    <string name="choice_free">Freie software</string>
+    <string name="choice_free_body">Der seitenfinder der app und Tesseract: freie software, nichts geht an Google, sieben sprachen. Auf hellem untergrund weniger sicher (die ecken lassen sich leicht korrigieren), unscharfe aufnahmen werden sofort gemeldet.</string>
+    <string name="choice_later">Das lässt sich jederzeit in den einstellungen ändern.</string>
+    <string name="choice_this_one">diese</string>
     <string name="shortcut_scan">Neuer Scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d seite</item>

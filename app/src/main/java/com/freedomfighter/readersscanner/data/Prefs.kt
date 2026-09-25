@@ -39,7 +39,9 @@ data class Settings(
     val syncOnOpen: Boolean = true,
     val format: PageFormat = PageFormat.AUTO,
     val capture: CaptureEngine = CaptureEngine.READERS,
-    val reader: TextEngine = TextEngine.TESSERACT
+    val reader: TextEngine = TextEngine.TESSERACT,
+    /** The first-start question (Google or free engines) has been answered. */
+    val engineChosen: Boolean = false
 ) {
     val configured: Boolean get() = server.isNotBlank()
     /** The folder URL, always ending with "/". */
@@ -70,7 +72,8 @@ class Prefs(context: Context) {
         syncOnOpen = sp.getBoolean("sync_on_open", true),
         format = enumOr(sp.getString("format", null), PageFormat.AUTO),
         capture = enumOr(sp.getString("capture", null), CaptureEngine.READERS),
-        reader = enumOr(sp.getString("reader", null), TextEngine.TESSERACT)
+        reader = enumOr(sp.getString("reader", null), TextEngine.TESSERACT),
+        engineChosen = sp.getBoolean("engine_chosen", false)
     )
     private inline fun <reified E : Enum<E>> enumOr(name: String?, default: E): E =
         name?.let { runCatching { enumValueOf<E>(it) }.getOrNull() } ?: default
@@ -85,6 +88,11 @@ class Prefs(context: Context) {
     fun setAccount(server: String, folder: String, username: String, password: String) =
         sp.edit().putString("server", server.trim()).putString("folder", folder.trim().ifBlank { "Scans" }).putString("username", username.trim()).putString("password", password).apply()
     fun setFormat(f: PageFormat) = sp.edit().putString("format", f.name).apply()
+    /** The first-start answer: both steps with Google's engines, or both with the free ones. */
+    fun chooseEngines(google: Boolean) = sp.edit()
+        .putString("capture", (if (google) CaptureEngine.MLKIT else CaptureEngine.READERS).name)
+        .putString("reader", (if (google) TextEngine.MLKIT else TextEngine.TESSERACT).name)
+        .putBoolean("engine_chosen", true).apply()
     fun setCapture(e: CaptureEngine) = sp.edit().putString("capture", e.name).apply()
     fun setReader(e: TextEngine) = sp.edit().putString("reader", e.name).apply()
     fun setSyncOnOpen(v: Boolean) = sp.edit().putBoolean("sync_on_open", v).apply()

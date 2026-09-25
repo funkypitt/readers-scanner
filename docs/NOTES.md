@@ -70,7 +70,17 @@
 - Emulator trap: `-no-snapshot-save` boots from the old quick-boot snapshot, so pushed photos and
   app data vanish at every restart; push the test photo again each time.
 
-## Two builds
+## ML Kit in the public app (1.0.3, user: "we keep ML for the public version, it's just too good")
+
+- Both flavours carry ML Kit (`engine/MlKit.kt` moved to main; the publique stub is gone).
+  First start (`EngineChoiceScreen`, until `engine_chosen`): Google ML Kit (recommended; disabled
+  with a note when `GoogleApiAvailability` says Play services are missing) or the free engines;
+  sets both steps, changeable per step in the settings. Upgraders from 1.0.2 get the question too.
+- Russian is always read by Tesseract (ML Kit: Latin only). The comparison screen is `prive` only.
+- ML Kit adds `ACCESS_NETWORK_STATE` and sends usage statistics to Google (its data disclosure);
+  the F-Droid entry declares NonFreeDep, UpstreamNonFree and Tracking.
+
+## Two builds (history)
 
 - `publique` (F-Droid): free software only. `prive` (`applicationIdSuffix .prive`, name
   "Reader's Scanner (privé)"): adds Google ML Kit to compare — document scanner (needs Play

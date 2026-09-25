@@ -44,6 +44,7 @@ class MainActivity : ComponentActivity() {
                         nav.push(Screen.FolderView(reveal.first.ifEmpty { null }))
                     }
                 }
+                if (!settings.engineChosen) { com.freedomfighter.readersscanner.ui.EngineChoiceScreen(app); return@ReaderTheme }
                 when (val s = nav.current) {
                     Screen.Home -> HomeScreen(nav, app)
                     is Screen.FolderView -> FolderScreen(nav, app, s.folder)
