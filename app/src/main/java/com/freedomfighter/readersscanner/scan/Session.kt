@@ -149,8 +149,9 @@ class Session(private val context: Context, val docId: String?, private val defa
             Page(pid, d.quad.copyOf(), d.rotation, d.filter)
         }
         val n = name?.trim()?.takeIf { it.isNotEmpty() }
-        val doc = if (old != null) old.copy(pages = newPages, lang = lang, ocr = OcrState.PENDING, rev = old.rev + 1, name = if (old.named) old.name else null)
-        else Doc(id, created, n, n != null, folder, lang, newPages, OcrState.PENDING, 0)
+        val now = System.currentTimeMillis()
+        val doc = if (old != null) old.copy(pages = newPages, lang = lang, ocr = OcrState.PENDING, rev = old.rev + 1, name = if (old.named) old.name else null, modified = now)
+        else Doc(id, created, n, n != null, folder, lang, newPages, OcrState.PENDING, 0, modified = now)
         Store.put(doc)
         // The pages stay listed while the screen closes; their files are the document's now.
         return doc

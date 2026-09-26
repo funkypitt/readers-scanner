@@ -82,7 +82,7 @@
     <string name="pages">страницы</string>
     <string name="search_hint">поиск по названиям и тексту</string>
     <string name="nothing_found">ничего не найдено</string>
-    <string name="account_hint">Папка WebDAV получает копию каждого скана в виде PDF с поиском по тексту, во вложенной папке с именем его папки здесь. kDrive: сервер https://ID.connect.kdrive.infomaniak.com (ID — число в веб-адресе kDrive), ваш логин Infomaniak и пароль приложения при двухфакторной аутентификации. Nextcloud и любой WebDAV-сервер работают так же. Оригиналы остаются на телефоне.</string>
+    <string name="account_hint">Папка WebDAV делит сканы с другими устройствами (второй телефон, Reader\'s Scanner на компьютере): каждый документ как PDF с поиском, во вложенной папке с именем его папки, с небольшим описанием в .readers-scanner. Документы с других устройств видны сразу; их PDF загружается при открытии. kDrive: сервер https://ID.connect.kdrive.infomaniak.com (ID — число в веб-адресе kDrive), ваш логин Infomaniak и пароль приложения при двухфакторной аутентификации. Nextcloud и любой WebDAV-сервер работают так же.</string>
     <string name="server">сервер</string>
     <string name="server_prompt">сервер (https://…)</string>
     <string name="username">имя пользователя</string>
@@ -152,6 +152,11 @@
     <string name="choice_free_body">Собственный поиск страницы и Tesseract: свободное ПО, ничего не уходит в Google, семь языков. Менее уверен на светлом фоне (углы легко поправить), размытые снимки сразу помечаются.</string>
     <string name="choice_later">Это можно изменить в любой момент в настройках.</string>
     <string name="choice_this_one">этот</string>
+    <string name="downloading_pdf">загрузка PDF… %1$d %%</string>
+    <string name="pdf_unavailable">PDF нет на сервере</string>
+    <string name="pdf_needs_server">отсканировано в другом месте: PDF нужна папка WebDAV</string>
+    <string name="from_elsewhere">отсканировано в другом месте</string>
+    <string name="n_received">получено: %1$d</string>
     <string name="shortcut_scan">Новый скан</string>
     <plurals name="n_pages">
         <item quantity="one">%d страница</item>

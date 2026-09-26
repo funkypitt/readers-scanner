@@ -329,7 +329,7 @@ fun FolderScreen(nav: Nav, app: App, folder: String?) {
         }
     }
     val chosen = docs.filter { it.id in selected }
-    if (sharing) ShareMenu(chosen) { sharing = false }
+    if (sharing) ShareMenu(app, chosen) { sharing = false }
     if (moving) {
         TextMenu(stringResource(R.string.move_to), listOf(MenuItem(stringResource(R.string.all_scans_only)) { chosen.forEach { Store.move(it.id, null) }; selected.clear(); app.sync(500) }) +
             Store.folders().map { f -> MenuItem(f.name) { chosen.forEach { Store.move(it.id, f.id) }; selected.clear(); app.sync(500) } },
@@ -345,6 +345,26 @@ fun FolderScreen(nav: Nav, app: App, folder: String?) {
 }
 
 private val HM = DateTimeFormatter.ofPattern("HH:mm")
+
+/**
+ * Page [i] of a document, [widthPx] across: from its page file when scanned here, from its PDF
+ * when it came from elsewhere (null until that PDF is here).
+ */
+@Composable
+fun pageBitmap(d: Doc, i: Int, widthPx: Int): Bitmap? {
+    val downloading by com.freedomfighter.readersscanner.data.Remote.progress.collectAsState()
+    val ready = !d.remote || (d.id !in downloading && com.freedomfighter.readersscanner.data.Remote.hasPdf(d))
+    val local = d.pages.getOrNull(i)
+    val file = if (d.remote) Store.pdfFile(d) else local?.let { Store.pageFile(d, it) }
+    val bmp by produceState<Bitmap?>(null, d.id, i, ready, file?.lastModified(), widthPx) {
+        value = when {
+            !ready || file == null -> null
+            d.remote -> com.freedomfighter.readersscanner.data.Remote.page(file, i, widthPx)
+            else -> withContext(Dispatchers.IO) { Imaging.thumbnail(file, widthPx) }
+        }
+    }
+    return bmp
+}
 
 fun whenLabel(context: Context, millis: Long): String {
     val locale = context.resources.configuration.locales[0] ?: Locale.getDefault()
@@ -369,17 +389,16 @@ fun statusLabel(context: Context, d: Doc, working: Pair<String, String>?): Strin
 private fun DocRow(d: Doc, working: Pair<String, String>?, showFolder: Boolean, mark: Boolean?, onClick: () -> Unit, onLongPress: () -> Unit) {
     val context = LocalContext.current
     val colors = LocalColors.current
-    val first = d.pages.firstOrNull()
     val thumbPx = with(LocalDensity.current) { 140.dp.roundToPx() }
-    val bmp by produceState<Bitmap?>(null, d.id, first?.id) {
-        value = first?.let { withContext(Dispatchers.IO) { Imaging.thumbnail(Store.pageFile(d, it), thumbPx) } }
-    }
-    val pages = context.resources.getQuantityString(R.plurals.n_pages, d.pages.size, d.pages.size)
+    val bmp = pageBitmap(d, 0, thumbPx)
+    val count = Store.pageCount(d)
+    val pages = context.resources.getQuantityString(R.plurals.n_pages, count, count)
     val folderName = if (showFolder) d.folder?.let { Store.folder(it)?.name } else null
     Row(Modifier.fillMaxWidth().background(if (mark == true) colors.fg.copy(alpha = 0.12f) else Color.Transparent).pressable(onClick, onLongPress).padding(horizontal = rowPadH, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         if (mark != null) T(if (mark) "●" else "○", Modifier.padding(end = 16.dp), size = LocalTypo.current.title, maxLines = 1)
         Box(Modifier.size(56.dp, 74.dp).border(1.dp, colors.rule), contentAlignment = Alignment.Center) {
             bmp?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
+                ?: if (d.remote) Small("PDF", maxLines = 1, align = TextAlign.Center) else Unit
         }
         Column(Modifier.weight(1f).padding(start = 18.dp)) {
             T(d.name ?: whenLabel(context, d.created), size = LocalTypo.current.title, maxLines = 2)
@@ -402,21 +421,22 @@ fun DocMenu(nav: Nav, app: App, d: Doc, onDismiss: () -> Unit) {
     val scope = appScope
     val saver = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { uri ->
         if (uri != null) scope.launch(Dispatchers.IO) {
-            val pdf = Pdf.ensure(context, d) ?: return@launch
+            val pdf = com.freedomfighter.readersscanner.data.Remote.pdf(context, app.prefs.settings.value, d) ?: return@launch
             runCatching { context.contentResolver.openOutputStream(uri)?.use { out -> pdf.inputStream().use { it.copyTo(out) } } }
         }
         onDismiss()
     }
     fun close() { if (!renaming && !moving && !deleting && !reading && !sharing) onDismiss() }
-    if (sharing) ShareMenu(listOf(d)) { sharing = false; onDismiss() }
+    if (sharing) ShareMenu(app, listOf(d)) { sharing = false; onDismiss() }
     if (shown) TextMenu(Store.title(d), listOf(
         MenuItem(stringResource(R.string.share) + "…") { shown = false; sharing = true },
-        MenuItem(stringResource(R.string.open_with)) { scope.launch { openPdf(context, d) } },
+        MenuItem(stringResource(R.string.open_with)) { scope.launch { openPdf(context, app, d) } },
         MenuItem(stringResource(R.string.save_copy)) { shown = false; saver.launch(Store.fileName(d)) },
         MenuItem(stringResource(R.string.rename)) { shown = false; renaming = true },
         MenuItem(stringResource(R.string.move_to)) { shown = false; moving = true },
-        MenuItem(stringResource(R.string.edit_pages)) { ScanActivity.start(context, doc = d.id, review = true) },
-        MenuItem(stringResource(R.string.read_again)) { shown = false; reading = true },
+        *(if (d.remote) emptyArray() else arrayOf(
+            MenuItem(stringResource(R.string.edit_pages)) { ScanActivity.start(context, doc = d.id, review = true) },
+            MenuItem(stringResource(R.string.read_again)) { shown = false; reading = true })),
         *(if (com.freedomfighter.readersscanner.BuildConfig.FLAVOR == "prive") arrayOf(MenuItem(stringResource(R.string.compare_readers)) { nav.push(Screen.Compare(d.id)) }) else emptyArray()),
         MenuItem(stringResource(R.string.delete)) { shown = false; deleting = true }
     ), onDismiss = { shown = false; close() })
@@ -448,7 +468,8 @@ fun readerName(context: Context, key: String): String? = when (key) {
     else -> null
 }
 
-suspend fun openPdf(context: Context, d: Doc) {
+suspend fun openPdf(context: Context, app: App, d: Doc) {
+    com.freedomfighter.readersscanner.data.Remote.pdf(context, app.prefs.settings.value, d) ?: return
     val f = withContext(Dispatchers.IO) { Pdf.shareCopy(context, d) } ?: return
     val uri = FileProvider.getUriForFile(context, context.packageName + ".files", f)
     val view = Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/pdf").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -478,7 +499,21 @@ fun DocScreen(nav: Nav, app: App, id: String) {
             ScreenTitleActions(d.name ?: whenLabel(context, d.created), onBack = { nav.pop() }, actions = listOf("⋯" to { menu = true }))
             val status = statusLabel(context, d, working)
             val readBy = readerName(context, d.readBy)
-            val info = listOfNotNull(whenLabel(context, d.created), context.resources.getQuantityString(R.plurals.n_pages, d.pages.size, d.pages.size), OcrLanguages.name(d.lang), readBy, status).joinToString(" · ")
+            val count = Store.pageCount(d)
+            val downloading by com.freedomfighter.readersscanner.data.Remote.progress.collectAsState()
+            val settingsNow by app.prefs.settings.collectAsState()
+            // A document from elsewhere: its PDF comes down now, the first time it is opened.
+            var fetchFailed by remember(d.id) { mutableStateOf(false) }
+            if (d.remote) LaunchedEffect(d.id) {
+                if (!com.freedomfighter.readersscanner.data.Remote.hasPdf(d)) fetchFailed = com.freedomfighter.readersscanner.data.Remote.pdf(context, settingsNow, d) == null
+            }
+            val remoteState = when {
+                !d.remote -> null
+                d.id in downloading -> context.getString(R.string.downloading_pdf, downloading[d.id] ?: 0)
+                fetchFailed && !com.freedomfighter.readersscanner.data.Remote.hasPdf(d) -> context.getString(if (settingsNow.configured) R.string.pdf_unavailable else R.string.pdf_needs_server)
+                else -> context.getString(R.string.from_elsewhere)
+            }
+            val info = listOfNotNull(whenLabel(context, d.created), context.resources.getQuantityString(R.plurals.n_pages, count, count), OcrLanguages.name(d.lang), readBy, remoteState, status).joinToString(" · ")
             Small(info, Modifier.padding(horizontal = rowPadH, vertical = 10.dp), maxLines = 2)
             if (showText) {
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = rowPadH)) {
@@ -494,9 +529,8 @@ fun DocScreen(nav: Nav, app: App, id: String) {
                     VSpace(24.dp)
                 }
             } else LazyColumn(Modifier.weight(1f)) {
-                itemsIndexed(d.pages, key = { _, p -> p.id }) { i, p ->
-                    val file = Store.pageFile(d, p)
-                    val bmp by produceState<Bitmap?>(null, file.path, file.lastModified()) { value = withContext(Dispatchers.IO) { Imaging.thumbnail(file, widthPx) } }
+                items(count, key = { i -> d.pages.getOrNull(i)?.id ?: "p$i" }) { i ->
+                    val bmp = pageBitmap(d, i, widthPx)
                     Box(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).noRippleClickable { nav.push(Screen.Viewer(d.id, i)) }) {
                         val b = bmp
                         if (b != null) Image(b.asImageBitmap(), null, Modifier.fillMaxWidth().aspectRatio(b.width.toFloat() / b.height).border(1.dp, LocalColors.current.rule), contentScale = ContentScale.FillWidth)
@@ -509,13 +543,13 @@ fun DocScreen(nav: Nav, app: App, id: String) {
             Row(Modifier.fillMaxWidth()) {
                 Box(Modifier.weight(1f)) { TextRow(stringResource(R.string.share), size = LocalTypo.current.small * 1.15f) { tick(); sharing = true } }
                 Box(Modifier.weight(1f)) { TextRow(stringResource(if (showText) R.string.pages else R.string.text), size = LocalTypo.current.small * 1.15f) { tick(); showText = !showText } }
-                Box(Modifier.weight(1f)) { TextRow("+ " + stringResource(R.string.page), size = LocalTypo.current.small * 1.15f) { tick(); ScanActivity.start(context, doc = d.id) } }
+                if (!d.remote) Box(Modifier.weight(1f)) { TextRow("+ " + stringResource(R.string.page), size = LocalTypo.current.small * 1.15f) { tick(); ScanActivity.start(context, doc = d.id) } }
             }
             Box(Modifier.windowInsetsPadding(WindowInsets.navigationBars))
         }
     }
     if (menu) DocMenu(nav, app, d) { menu = false }
-    if (sharing) ShareMenu(listOf(d)) { sharing = false }
+    if (sharing) ShareMenu(app, listOf(d)) { sharing = false }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -526,15 +560,14 @@ fun DocScreen(nav: Nav, app: App, id: String) {
 fun ViewerScreen(nav: Nav, id: String, start: Int) {
     val version by Store.version.collectAsState()
     val d = remember(version, id) { Store.doc(id) } ?: run { LaunchedEffect(Unit) { nav.pop() }; return }
-    val pager = rememberPagerState(initialPage = start.coerceIn(0, (d.pages.size - 1).coerceAtLeast(0))) { d.pages.size }
+    val count = Store.pageCount(d)
+    val pager = rememberPagerState(initialPage = start.coerceIn(0, (count - 1).coerceAtLeast(0))) { count }
     val widthPx = with(LocalDensity.current) { LocalConfiguration.current.screenWidthDp.dp.roundToPx() } * 2
     var zoomed by remember { mutableStateOf(false) }
     BackHandler { nav.pop() }
     Box(Modifier.fillMaxSize().background(Color.Black)) {
-        HorizontalPager(pager, Modifier.fillMaxSize(), userScrollEnabled = !zoomed, key = { d.pages.getOrNull(it)?.id ?: it }) { i ->
-            val p = d.pages.getOrNull(i) ?: return@HorizontalPager
-            val file = Store.pageFile(d, p)
-            val bmp by produceState<Bitmap?>(null, file.path) { value = withContext(Dispatchers.IO) { Imaging.thumbnail(file, widthPx) } }
+        HorizontalPager(pager, Modifier.fillMaxSize(), userScrollEnabled = !zoomed, key = { d.pages.getOrNull(it)?.id ?: "p$it" }) { i ->
+            val bmp = pageBitmap(d, i, widthPx)
             var scale by remember { mutableFloatStateOf(1f) }
             var offset by remember { mutableStateOf(Offset.Zero) }
             val state = rememberTransformableState { z, pan, _ ->
@@ -555,7 +588,7 @@ fun ViewerScreen(nav: Nav, id: String, start: Int) {
             }
         }
         Row(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).background(Color.Black.copy(alpha = 0.45f)).padding(horizontal = rowPadH, vertical = 12.dp)) {
-            T("←  " + (pager.currentPage + 1) + " / " + d.pages.size, Modifier.noRippleClickable { nav.pop() }, size = LocalTypo.current.title, color = Color.White, maxLines = 1)
+            T("←  " + (pager.currentPage + 1) + " / " + count, Modifier.noRippleClickable { nav.pop() }, size = LocalTypo.current.title, color = Color.White, maxLines = 1)
         }
     }
 }

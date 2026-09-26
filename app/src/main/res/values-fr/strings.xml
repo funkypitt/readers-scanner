@@ -82,7 +82,7 @@
     <string name="pages">pages</string>
     <string name="search_hint">chercher dans les noms et le texte</string>
     <string name="nothing_found">rien trouvé</string>
-    <string name="account_hint">Un dossier WebDAV reçoit une copie de chaque scan, en PDF avec texte cherchable, dans un sous-dossier au nom de son dossier ici. kDrive : serveur https://ID.connect.kdrive.infomaniak.com (l\'ID est le nombre dans l\'adresse web de kDrive), votre identifiant Infomaniak et un mot de passe d\'application si la double authentification est active. Nextcloud et tout serveur WebDAV fonctionnent de la même façon. Le téléphone garde les originaux.</string>
+    <string name="account_hint">Un dossier WebDAV partage les scans avec vos autres appareils (un autre téléphone, Reader\'s Scanner sur ordinateur) : chaque document en PDF cherchable, dans un sous-dossier au nom de son dossier, avec une petite description dans .readers-scanner. Les documents venus d\'ailleurs apparaissent aussitôt ; leur PDF se télécharge quand vous les ouvrez. kDrive : serveur https://ID.connect.kdrive.infomaniak.com (l\'ID est le nombre dans l\'adresse web de kDrive), votre identifiant Infomaniak et un mot de passe d\'application si la double authentification est active. Nextcloud et tout serveur WebDAV fonctionnent de la même façon.</string>
     <string name="server">serveur</string>
     <string name="server_prompt">serveur (https://…)</string>
     <string name="username">identifiant</string>
@@ -152,6 +152,11 @@
     <string name="choice_free_body">Le détecteur de page de l\'app et Tesseract : logiciel libre, rien ne part chez Google, sept langues. Moins sûr de la page sur un fond clair (les coins se corrigent facilement), les prises floues sont signalées aussitôt.</string>
     <string name="choice_later">Vous pourrez changer cela à tout moment dans les réglages.</string>
     <string name="choice_this_one">celui-ci</string>
+    <string name="downloading_pdf">téléchargement du PDF… %1$d %%</string>
+    <string name="pdf_unavailable">le PDF n\'est pas (plus) sur le serveur</string>
+    <string name="pdf_needs_server">scanné ailleurs : son PDF demande le dossier WebDAV</string>
+    <string name="from_elsewhere">scanné ailleurs</string>
+    <string name="n_received">%1$d reçu(s)</string>
     <string name="shortcut_scan">Nouveau scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d page</item>

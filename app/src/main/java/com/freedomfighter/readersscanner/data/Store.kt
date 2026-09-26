@@ -17,7 +17,8 @@ enum class Filter { AUTO, GREY, BW, ORIGINAL }
 
 enum class OcrState { PENDING, DONE, FAILED }
 
-data class Folder(val id: String, val name: String)
+/** A folder; [onServer]: seen on the server or created there, so its absence there means it was deleted there. */
+data class Folder(val id: String, val name: String, val onServer: Boolean = false)
 
 /**
  * One page. `quad` = the four corners (top-left, top-right, bottom-right, bottom-left) on the
@@ -41,7 +42,16 @@ data class Doc(
     /** Bumped on every change of the pages, so an OCR run on older pages is thrown away. */
     val rev: Int,
     /** Which reader produced the text: "tesseract-fast", "tesseract-best" or "mlkit". */
-    val readBy: String = ""
+    val readBy: String = "",
+    /**
+     * Scanned on another device (1.1.0, two-way sync): no page photos here, only its description
+     * and text; the PDF is downloaded when the document is opened.
+     */
+    val remote: Boolean = false,
+    /** Pages of a remote document (the local ones count [pages]). */
+    val pageCount: Int = 0,
+    /** Last change of its name, folder or pages, epoch ms: the newer side wins a conflict. */
+    val modified: Long = created
 )
 
 object Store {
@@ -68,39 +78,75 @@ object Store {
 
     private val foldersFile get() = File(root, "folders.json")
 
+    private val goneFile get() = File(root, "folders-gone.json")
+    /** Folders deleted or renamed here (their names), to remove from the server once empty there. */
+    private var gone = mutableListOf<String>()
+
     private fun readFolders() {
         folders = runCatching {
             val a = JSONArray(foldersFile.readText())
-            (0 until a.length()).map { a.getJSONObject(it).let { o -> Folder(o.getString("id"), o.getString("name")) } }.toMutableList()
+            (0 until a.length()).map { a.getJSONObject(it).let { o -> Folder(o.getString("id"), o.getString("name"), o.optBoolean("onServer")) } }.toMutableList()
         }.getOrDefault(mutableListOf())
+        gone = runCatching { JSONArray(goneFile.readText()).let { a -> (0 until a.length()).map { a.getString(it) }.toMutableList() } }.getOrDefault(mutableListOf())
     }
 
     private fun writeFolders() {
         val a = JSONArray()
-        folders.forEach { a.put(JSONObject().put("id", it.id).put("name", it.name)) }
+        folders.forEach { a.put(JSONObject().put("id", it.id).put("name", it.name).put("onServer", it.onServer)) }
         atomicWrite(foldersFile, a.toString(1))
+        atomicWrite(goneFile, JSONArray().apply { gone.forEach { put(it) } }.toString())
     }
 
     fun folders(): List<Folder> = synchronized(lock) { folders.toList() }
 
     fun folder(id: String?): Folder? = synchronized(lock) { folders.firstOrNull { it.id == id } }
 
+    fun folderByName(name: String): Folder? = synchronized(lock) { folders.firstOrNull { it.name.equals(name, ignoreCase = true) } }
+
+    /** A folder of that name (made safe for a file system: it is a folder on the server too); the existing one if taken. */
     fun addFolder(name: String): Folder = synchronized(lock) {
-        val f = Folder(UUID.randomUUID().toString().take(8), name.trim())
-        folders.add(f); writeFolders(); changed(); f
+        val n = folderNameOf(name) ?: "…"
+        folderByName(n)?.let { return it }
+        val f = Folder(UUID.randomUUID().toString().take(8), n)
+        folders.add(f); gone.remove(n); writeFolders(); changed(); f
     }
 
     fun renameFolder(id: String, name: String) = synchronized(lock) {
+        val n = folderNameOf(name) ?: return
         val i = folders.indexOfFirst { it.id == id }
-        if (i >= 0) { folders[i] = folders[i].copy(name = name.trim()); writeFolders(); changed() }
+        if (i < 0 || folders[i].name == n || folders.any { it.id != id && it.name.equals(n, ignoreCase = true) }) return
+        if (folders[i].onServer) gone.add(folders[i].name)
+        folders[i] = folders[i].copy(name = n, onServer = false); gone.remove(n)
+        // its documents move with it on the server: their descriptions change
+        val now = System.currentTimeMillis()
+        docs.values.filter { it.folder == id }.forEach { writeDoc(it.copy(modified = now)) }
+        writeFolders(); changed()
     }
 
     /** The documents stay: they fall back into "all scans" only. */
     fun deleteFolder(id: String) = synchronized(lock) {
+        folders.firstOrNull { it.id == id }?.let { if (it.onServer) gone.add(it.name) }
+        folders.removeAll { it.id == id }; writeFolders()
+        val now = System.currentTimeMillis()
+        docs.values.filter { it.folder == id }.forEach { writeDoc(it.copy(folder = null, modified = now)) }
+        changed()
+    }
+
+    // folder side of the sync
+    fun goneFolders(): List<String> = synchronized(lock) { gone.toList() }
+    fun folderOnServer(name: String): Folder = synchronized(lock) {
+        val f = folderByName(name)
+        val out = if (f == null) Folder(UUID.randomUUID().toString().take(8), name, true).also { folders.add(it) }
+            else f.copy(onServer = true).also { folders[folders.indexOf(f)] = it }
+        writeFolders(); changed(); out
+    }
+    /** Deleted there: gone here too; its documents fall back into "all scans". */
+    fun folderGoneThere(id: String) = synchronized(lock) {
         folders.removeAll { it.id == id }; writeFolders()
         docs.values.filter { it.folder == id }.forEach { writeDoc(it.copy(folder = null)) }
         changed()
     }
+    fun folderRemovedThere(name: String) = synchronized(lock) { gone.remove(name); writeFolders() }
 
     // --- documents ----------------------------------------------------------------------------
 
@@ -142,13 +188,16 @@ object Store {
         // New pages: the old text and PDF no longer match them.
         if (doc.ocr == OcrState.PENDING) { textFile(doc).delete(); pdfFile(doc).delete() }
         // Page files that no longer belong to the document go.
-        val keep = doc.pages.flatMap { listOf(it.id + ".jpg", it.id + ".src.jpg") }.toSet() + setOf("doc.json", "doc.pdf", "text.txt")
+        val keep = doc.pages.flatMap { listOf(it.id + ".jpg", it.id + ".src.jpg") }.toSet() + setOf("doc.json", "doc.pdf", "text.txt", "render")
         dir(doc.id).listFiles()?.forEach { if (it.name !in keep && !it.name.startsWith("ocr-")) it.delete() }
         changed()
     }
 
-    fun rename(id: String, name: String?) = update(id) { it.copy(name = name?.trim()?.takeIf { n -> n.isNotEmpty() }, named = !name.isNullOrBlank()) }
-    fun move(id: String, folder: String?) = update(id) { it.copy(folder = folder) }
+    fun rename(id: String, name: String?) = update(id) { it.copy(name = name?.trim()?.takeIf { n -> n.isNotEmpty() }, named = !name.isNullOrBlank(), modified = System.currentTimeMillis()) }
+    fun move(id: String, folder: String?) = update(id) { it.copy(folder = folder, modified = System.currentTimeMillis()) }
+
+    /** Pages of a document, here or (remote) as described by its other device. */
+    fun pageCount(d: Doc) = if (d.remote) d.pageCount else d.pages.size
 
     fun update(id: String, change: (Doc) -> Doc) = synchronized(lock) {
         val d = docs[id] ?: return
@@ -179,11 +228,25 @@ object Store {
     fun readAgain(id: String, lang: String? = null) = synchronized(lock) {
         val d = docs[id] ?: return
         textFile(d).delete(); pdfFile(d).delete()
-        writeDoc(d.copy(ocr = OcrState.PENDING, lang = lang ?: d.lang, rev = d.rev + 1, name = if (d.named) d.name else null))
+        writeDoc(d.copy(ocr = OcrState.PENDING, lang = lang ?: d.lang, rev = d.rev + 1, name = if (d.named) d.name else null, modified = System.currentTimeMillis()))
         changed()
     }
 
-    fun pending(): List<String> = synchronized(lock) { docs.values.filter { it.ocr == OcrState.PENDING }.sortedBy { it.created }.map { it.id } }
+    fun pending(): List<String> = synchronized(lock) { docs.values.filter { it.ocr == OcrState.PENDING && !it.remote }.sortedBy { it.created }.map { it.id } }
+
+    // --- documents from other devices (two-way sync, 1.1.0) -----------------------------------
+
+    /** A document described by another device, new here or changed there; [text] = its pages' text. */
+    fun putRemote(d: Doc, text: List<String>, dropPdf: Boolean) = synchronized(lock) {
+        dir(d.id).mkdirs()
+        writeDoc(d)
+        atomicWrite(textFile(d), text.joinToString(PAGE_BREAK))
+        if (dropPdf) pdfFile(d).delete()
+        changed()
+    }
+
+    /** Its name, folder… changed on the other device (a document scanned here keeps its pages). */
+    fun applyRemoteMeta(id: String, change: (Doc) -> Doc) = update(id, change)
 
     /** Title and text, matched without case or accents. */
     fun search(query: String): List<Pair<Doc, String?>> {
@@ -221,6 +284,7 @@ object Store {
         }
         val o = JSONObject().put("id", d.id).put("created", d.created).put("named", d.named)
             .put("lang", d.lang).put("ocr", d.ocr.name).put("rev", d.rev).put("readBy", d.readBy).put("pages", pages)
+            .put("remote", d.remote).put("pageCount", d.pageCount).put("modified", d.modified)
         d.name?.let { o.put("name", it) }
         d.folder?.let { o.put("folder", it) }
         dir(d.id).mkdirs()
@@ -245,7 +309,10 @@ object Store {
             },
             ocr = runCatching { OcrState.valueOf(o.getString("ocr")) }.getOrDefault(OcrState.PENDING),
             rev = o.optInt("rev"),
-            readBy = o.optString("readBy")
+            readBy = o.optString("readBy"),
+            remote = o.optBoolean("remote"),
+            pageCount = o.optInt("pageCount"),
+            modified = o.optLong("modified", o.getLong("created"))
         )
     }.getOrNull()
 
@@ -285,6 +352,10 @@ object Reflow {
         }.trim()
     }
 }
+
+/** A folder name the server and a desktop will both accept (it is a folder on the server); null when nothing is left. */
+fun folderNameOf(name: String): String? =
+    name.replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), " ").replace(Regex("\\s+"), " ").trim().trim('.').trim().takeIf { it.isNotEmpty() }?.take(60)
 
 /** The name a document gets from its text when the user gave none. */
 object Naming {

@@ -82,7 +82,7 @@
     <string name="pages">páginas</string>
     <string name="search_hint">procurar nos nomes e no texto</string>
     <string name="nothing_found">nada encontrado</string>
-    <string name="account_hint">Uma pasta WebDAV recebe uma cópia de cada digitalização, em PDF pesquisável, numa subpasta com o nome da sua pasta aqui. kDrive: servidor https://ID.connect.kdrive.infomaniak.com (o ID é o número no endereço web do kDrive), o seu utilizador Infomaniak e uma palavra-passe de aplicação se tiver a verificação em dois passos. O Nextcloud e qualquer servidor WebDAV funcionam da mesma forma. O telemóvel guarda os originais.</string>
+    <string name="account_hint">Uma pasta WebDAV partilha as digitalizações com os seus outros aparelhos (outro telemóvel, o Reader\'s Scanner no computador): cada documento em PDF pesquisável, numa subpasta com o nome da sua pasta, com uma pequena descrição em .readers-scanner. Os documentos de outro lado aparecem logo; o PDF descarrega-se quando os abre. kDrive: servidor https://ID.connect.kdrive.infomaniak.com (o ID é o número no endereço web do kDrive), o seu utilizador Infomaniak e uma palavra-passe de aplicação se tiver a verificação em dois passos. O Nextcloud e qualquer servidor WebDAV funcionam da mesma forma.</string>
     <string name="server">servidor</string>
     <string name="server_prompt">servidor (https://…)</string>
     <string name="username">utilizador</string>
@@ -152,6 +152,11 @@
     <string name="choice_free_body">O detetor de página da app e o Tesseract: software livre, nada vai para a Google, sete línguas. Menos seguro da página em fundo claro (os cantos corrigem-se facilmente), as fotos desfocadas são assinaladas de imediato.</string>
     <string name="choice_later">Pode mudar isto a qualquer momento nas definições.</string>
     <string name="choice_this_one">este</string>
+    <string name="downloading_pdf">a descarregar o PDF… %1$d %%</string>
+    <string name="pdf_unavailable">o PDF não está (já) no servidor</string>
+    <string name="pdf_needs_server">digitalizado noutro lado: o PDF precisa da pasta WebDAV</string>
+    <string name="from_elsewhere">digitalizado noutro lado</string>
+    <string name="n_received">%1$d recebido(s)</string>
     <string name="shortcut_scan">Nova digitalização</string>
     <plurals name="n_pages">
         <item quantity="one">%d página</item>

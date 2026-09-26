@@ -18,6 +18,7 @@ object Pdf {
     fun ensure(context: Context, doc: Doc): File? = synchronized(lock) {
         val f = Store.pdfFile(doc)
         if (f.exists() && f.length() > 0) return f
+        if (doc.remote) return null   // made elsewhere: only ever downloaded (Remote.pdf)
         val pages = doc.pages.map { Store.pageFile(doc, it) }
         if (pages.isEmpty() || pages.any { !it.exists() }) return null
         val tmp = File(f.parentFile, "ocr-plain.pdf")

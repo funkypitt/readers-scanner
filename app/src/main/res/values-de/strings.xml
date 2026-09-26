@@ -82,7 +82,7 @@
     <string name="pages">seiten</string>
     <string name="search_hint">in namen und text suchen</string>
     <string name="nothing_found">nichts gefunden</string>
-    <string name="account_hint">Ein WebDAV-Ordner erhält eine kopie jedes scans als durchsuchbares PDF, in einem unterordner mit dem namen seines ordners hier. kDrive: server https://ID.connect.kdrive.infomaniak.com (die ID ist die zahl in der kDrive-webadresse), Ihr Infomaniak-login und bei zwei-faktor-anmeldung ein app-passwort. Nextcloud und jeder WebDAV-server funktionieren genauso. Das telefon behält die originale.</string>
+    <string name="account_hint">Ein WebDAV-ordner teilt die scans mit ihren anderen geräten (ein zweites telefon, Reader\'s Scanner auf dem computer): jedes dokument als durchsuchbares PDF, in einem unterordner mit dem namen seines ordners, mit einer kleinen beschreibung in .readers-scanner. Dokumente von anderswo erscheinen sofort; ihr PDF wird beim öffnen geladen. kDrive: server https://ID.connect.kdrive.infomaniak.com (die ID ist die zahl in der kDrive-webadresse), Ihr Infomaniak-login und bei zwei-faktor-anmeldung ein app-passwort. Nextcloud und jeder WebDAV-server funktionieren genauso.</string>
     <string name="server">server</string>
     <string name="server_prompt">server (https://…)</string>
     <string name="username">benutzername</string>
@@ -152,6 +152,11 @@
     <string name="choice_free_body">Der seitenfinder der app und Tesseract: freie software, nichts geht an Google, sieben sprachen. Auf hellem untergrund weniger sicher (die ecken lassen sich leicht korrigieren), unscharfe aufnahmen werden sofort gemeldet.</string>
     <string name="choice_later">Das lässt sich jederzeit in den einstellungen ändern.</string>
     <string name="choice_this_one">diese</string>
+    <string name="downloading_pdf">PDF wird geladen… %1$d %%</string>
+    <string name="pdf_unavailable">das PDF ist nicht (mehr) auf dem server</string>
+    <string name="pdf_needs_server">anderswo gescannt: sein PDF braucht den WebDAV-ordner</string>
+    <string name="from_elsewhere">anderswo gescannt</string>
+    <string name="n_received">%1$d empfangen</string>
     <string name="shortcut_scan">Neuer Scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d seite</item>

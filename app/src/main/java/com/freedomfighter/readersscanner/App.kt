@@ -54,7 +54,7 @@ class App : Application() {
                     _status.value = try {
                         val r = Sync.run(this@App, prefs.settings.value)
                         val t = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
-                        listOfNotNull(getString(R.string.synced_at, t), if (r.uploaded > 0) getString(R.string.n_sent, r.uploaded) else null, if (r.deleted > 0) getString(R.string.n_removed, r.deleted) else null).joinToString(" · ")
+                        listOfNotNull(getString(R.string.synced_at, t), if (r.uploaded > 0) getString(R.string.n_sent, r.uploaded) else null, if (r.deleted > 0) getString(R.string.n_removed, r.deleted) else null, if (r.downloaded > 0) getString(R.string.n_received, r.downloaded) else null).joinToString(" · ")
                     } catch (e: Exception) { getString(R.string.sync_failed, e.message ?: e.javaClass.simpleName) }
                 } while (synchronized(this@App) { again })
             }

@@ -112,6 +112,39 @@ class WebDav(private val username: String, private val password: String) {
     }
 
     fun delete(url: String) { request("DELETE", url, allow = setOf(404)) }
+
+    /** Moves (renames) a file on the server without sending it again; never overwrites. */
+    fun move(from: String, to: String) {
+        request("MOVE", from, headers = mapOf("Destination" to to, "Overwrite" to "F"))
+    }
+
+    /** Small text files (the documents' descriptions) up; returns the etag when the server says it. */
+    fun putText(url: String, text: String, contentType: String = "application/json; charset=utf-8"): String? {
+        val r = request("PUT", url, text.toByteArray(Charsets.UTF_8), contentType = contentType)
+        return r.headers.entries.firstOrNull { it.key.equals("ETag", ignoreCase = true) }?.value?.firstOrNull()?.trim()?.removePrefix("W/")?.removeSurrounding("\"")
+    }
+
+    /** Downloads a file into [out] (written to a temporary file first). False when it is not there (404). */
+    fun download(url: String, out: java.io.File, progress: ((Long, Long) -> Unit)? = null): Boolean {
+        val c = URL(url).openConnection() as HttpURLConnection
+        c.connectTimeout = 15_000; c.readTimeout = 120_000
+        c.setRequestProperty("Authorization", auth)
+        c.setRequestProperty("User-Agent", "readers-scanner")
+        try {
+            val code = c.responseCode
+            if (code == 404) return false
+            if (code == 401) throw WebDavException("wrong username or password")
+            if (code >= 400) throw WebDavException("GET: HTTP $code")
+            val total = c.contentLengthLong
+            val tmp = java.io.File(out.parentFile, out.name + ".part")
+            c.inputStream.use { input -> tmp.outputStream().use { o ->
+                val buf = ByteArray(64 * 1024); var done = 0L
+                while (true) { val r = input.read(buf); if (r < 0) break; o.write(buf, 0, r); done += r; progress?.invoke(done, total) }
+            } }
+            if (!tmp.renameTo(out)) { out.delete(); tmp.renameTo(out) }
+            return true
+        } finally { c.disconnect() }
+    }
     fun mkcol(url: String) { request("MKCOL", url, allow = setOf(405, 301)) }
     fun exists(url: String): Boolean = request("PROPFIND", url, depth = 0, allow = setOf(404)).code != 404
 

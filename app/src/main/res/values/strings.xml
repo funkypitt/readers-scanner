@@ -82,7 +82,7 @@
     <string name="pages">pages</string>
     <string name="search_hint">search names and text</string>
     <string name="nothing_found">nothing found</string>
-    <string name="account_hint">A WebDAV folder receives a copy of every scan, as a searchable PDF, in a subfolder named after its folder here. kDrive: server https://ID.connect.kdrive.infomaniak.com (the ID is the number in the kDrive web address), your Infomaniak login, and an application password if two-factor authentication is on. Nextcloud and any WebDAV server work the same way. The phone keeps the originals.</string>
+    <string name="account_hint">A WebDAV folder shares the scans with your other devices (another phone, Reader\'s Scanner on a computer): each document as a searchable PDF, in a subfolder named after its folder, with a small description in .readers-scanner. Documents from elsewhere show at once; their PDF comes down when you open them. kDrive: server https://ID.connect.kdrive.infomaniak.com (the ID is the number in the kDrive web address), your Infomaniak login, and an application password if two-factor authentication is on. Nextcloud and any WebDAV server work the same way.</string>
     <string name="server">server</string>
     <string name="server_prompt">server (https://…)</string>
     <string name="username">username</string>
@@ -152,6 +152,11 @@
     <string name="choice_free_body">The app\'s own page finder and Tesseract: free software, nothing goes to Google, seven languages. Less sure of the page on pale backgrounds (the corners are easy to adjust), blurred shots are flagged at once.</string>
     <string name="choice_later">You can change this at any time in the settings.</string>
     <string name="choice_this_one">this one</string>
+    <string name="downloading_pdf">downloading the PDF… %1$d %%</string>
+    <string name="pdf_unavailable">the PDF is not on the server (any more)</string>
+    <string name="pdf_needs_server">scanned elsewhere: its PDF needs the WebDAV folder</string>
+    <string name="from_elsewhere">scanned elsewhere</string>
+    <string name="n_received">%1$d received</string>
     <string name="shortcut_scan">New scan</string>
     <plurals name="n_pages">
         <item quantity="one">%d page</item>

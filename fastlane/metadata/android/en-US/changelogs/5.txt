@@ -1,0 +1,1 @@
+Two-way sync: documents and folders from your other devices show here; their PDF comes down when you open them. Renames and moves travel without sending the file again.

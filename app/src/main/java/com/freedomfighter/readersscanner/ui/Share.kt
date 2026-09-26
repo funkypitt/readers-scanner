@@ -26,17 +26,18 @@ enum class ShareKind { PDF, IMAGES, TEXT }
  * as pictures, or the text alone.
  */
 @Composable
-fun ShareMenu(docs: List<Doc>, onDismiss: () -> Unit) {
+fun ShareMenu(app: com.freedomfighter.readersscanner.App, docs: List<Doc>, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val scope = appScope
     if (docs.isEmpty()) { onDismiss(); return }
-    val pages = docs.sumOf { it.pages.size }
+    val pages = docs.sumOf { Store.pageCount(it) }
+    val settings = app.prefs.settings.value
     val unread = docs.any { it.ocr != OcrState.DONE }
     val title = if (docs.size == 1) Store.title(docs[0]) else context.resources.getQuantityString(R.plurals.n_documents, docs.size, docs.size)
     TextMenu(title, listOf(
-        MenuItem(stringResource(R.string.share_pdf), stringResource(if (docs.size == 1) R.string.share_pdf_hint else R.string.share_pdfs_hint)) { scope.launch { Share.send(context, docs, ShareKind.PDF) } },
-        MenuItem(stringResource(R.string.share_images), context.resources.getQuantityString(R.plurals.n_pictures, pages, pages)) { scope.launch { Share.send(context, docs, ShareKind.IMAGES) } },
-        MenuItem(stringResource(R.string.share_text), if (unread) stringResource(R.string.text_not_all_read) else stringResource(R.string.share_text_hint)) { scope.launch { Share.send(context, docs, ShareKind.TEXT) } }
+        MenuItem(stringResource(R.string.share_pdf), stringResource(if (docs.size == 1) R.string.share_pdf_hint else R.string.share_pdfs_hint)) { scope.launch { Share.send(context, settings, docs, ShareKind.PDF) } },
+        MenuItem(stringResource(R.string.share_images), context.resources.getQuantityString(R.plurals.n_pictures, pages, pages)) { scope.launch { Share.send(context, settings, docs, ShareKind.IMAGES) } },
+        MenuItem(stringResource(R.string.share_text), if (unread) stringResource(R.string.text_not_all_read) else stringResource(R.string.share_text_hint)) { scope.launch { Share.send(context, settings, docs, ShareKind.TEXT) } }
     ), onDismiss = onDismiss)
 }
 
@@ -56,17 +57,24 @@ object Share {
 
     private fun uri(context: Context, f: File): Uri = FileProvider.getUriForFile(context, context.packageName + ".files", f)
 
-    suspend fun send(context: Context, docs: List<Doc>, kind: ShareKind) {
+    suspend fun send(context: Context, settings: com.freedomfighter.readersscanner.data.Settings, docs: List<Doc>, kind: ShareKind) {
         val subject = if (docs.size == 1) Store.title(docs[0]) else docs.joinToString(", ") { it.name ?: Store.title(it) }.take(120)
         when (kind) {
             ShareKind.PDF -> {
+                // documents from elsewhere: their PDF comes down first
+                docs.filter { it.remote }.forEach { com.freedomfighter.readersscanner.data.Remote.pdf(context, settings, it) }
                 val files = withContext(Dispatchers.IO) { docs.mapNotNull { Pdf.shareCopy(context, it) } }
                 files(context, files, "application/pdf", subject)
             }
             ShareKind.IMAGES -> {
-                val files = withContext(Dispatchers.IO) {
-                    val d = dir(context)
-                    docs.flatMap { doc ->
+                val d0 = withContext(Dispatchers.IO) { dir(context) }
+                val fromElsewhere = docs.filter { it.remote }.flatMap { doc ->
+                    val pdf = com.freedomfighter.readersscanner.data.Remote.pdf(context, settings, doc) ?: return@flatMap emptyList()
+                    com.freedomfighter.readersscanner.data.Remote.pagesAsJpeg(pdf, Store.pageCount(doc), d0, Store.fileName(doc, "").removeSuffix("."))
+                }
+                val files = fromElsewhere + withContext(Dispatchers.IO) {
+                    val d = d0
+                    docs.filter { !it.remote }.flatMap { doc ->
                         val base = Store.fileName(doc, "").removeSuffix(".")
                         doc.pages.mapIndexedNotNull { i, p ->
                             val src = Store.pageFile(doc, p)
