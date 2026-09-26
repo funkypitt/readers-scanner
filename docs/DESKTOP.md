@@ -54,6 +54,18 @@ keeps the app MIT and Python, and NAPS2 (GPL-2.0) stays a separate program the u
 console`) and says how to get it when absent. The SDK stays the fallback if the console proves too
 coarse (no page-by-page events: a feeder batch arrives at the end).
 
+### NAPS2 is required — said everywhere, for everyone (user's rule, 2026-09-26)
+
+- **README, gallaz.ch/eink article, GitHub release notes, .deb/PKGBUILD descriptions**: first
+  line after the summary: « Requires NAPS2 (free, naps2.com), installed separately: it talks to the
+  scanner. » PKGBUILD `depends`/`optdepends` and the .deb `Depends:`/`Recommends:` name it where the
+  distribution packages it; otherwise the description says where to get it.
+- **First launch without NAPS2**: not an error message but a page — what NAPS2 is and why the app
+  needs it, the download link for this system (naps2.com/download, or the Flatpak line on Linux),
+  and « look again » once it is installed. The app never pretends to scan without it.
+- **Settings**: « scanner program: NAPS2 x.y found at … » (or « not found — install it »), so
+  the dependency stays visible.
+
 ## Sync with the phone: the part that decides everything
 
 Today the phone only sends (one-way mirror, PDFs only), so a desktop cannot share its folders
