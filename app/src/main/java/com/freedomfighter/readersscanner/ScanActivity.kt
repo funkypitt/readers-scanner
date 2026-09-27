@@ -138,7 +138,7 @@ class ScanActivity : ComponentActivity() {
         MlKit.scanner(this, { sender -> googleScanner.launch(IntentSenderRequest.Builder(sender).build()) }, { err ->
             // Play services missing or refusing: our own camera instead, said once.
             failed = true
-            android.widget.Toast.makeText(this, "ML Kit: $err", android.widget.Toast.LENGTH_LONG).show()
+            android.widget.Toast.makeText(this, getString(R.string.google_scanner_failed, err), android.widget.Toast.LENGTH_LONG).show()
             mode = Mode.CAMERA
             if (granted) bind() else askAgain()
         })

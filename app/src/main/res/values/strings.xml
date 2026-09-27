@@ -82,7 +82,7 @@
     <string name="pages">pages</string>
     <string name="search_hint">search names and text</string>
     <string name="nothing_found">nothing found</string>
-    <string name="account_hint">A WebDAV folder shares the scans with your other devices (another phone, Reader\'s Scanner on a computer): each document as a searchable PDF, in a subfolder named after its folder, with a small description in .readers-scanner. Documents from elsewhere show at once; their PDF comes down when you open them. kDrive: server https://ID.connect.kdrive.infomaniak.com (the ID is the number in the kDrive web address), your Infomaniak login, and an application password if two-factor authentication is on. Nextcloud and any WebDAV server work the same way.</string>
+    <string name="account_hint">A WebDAV folder shares your scans with your other devices (another phone, Reader\'s Scanner on a computer): each document as a searchable PDF, in a subfolder named after its folder. Documents scanned on other devices show at once; their PDF downloads when you open them. kDrive: server https://ID.connect.kdrive.infomaniak.com (the ID is the number in the kDrive web address), your Infomaniak login, and an application password if two-factor authentication is on. Nextcloud and any WebDAV server work the same way.</string>
     <string name="server">server</string>
     <string name="server_prompt">server (https://…)</string>
     <string name="username">username</string>
@@ -124,7 +124,7 @@
     <string name="reader_fast">Tesseract fast</string>
     <string name="reader_best">Tesseract best</string>
     <string name="engine_mlkit">ML Kit (Google)</string>
-    <string name="engine_readers">Reader\'s (own camera)</string>
+    <string name="engine_readers">built-in (free software)</string>
     <string name="engine_tesseract">Tesseract (free software)</string>
     <string name="capture_engine">finding the page</string>
     <string name="text_engine">reading the text</string>
@@ -146,7 +146,7 @@
     <string name="choice_title">Which engine?</string>
     <string name="choice_intro">Two ways of finding the page and reading its text. Both work on the phone: your documents are never sent to be read.</string>
     <string name="choice_google">Google ML Kit (recommended)</string>
-    <string name="choice_google_body">Finds and straightens pages most surely, on any background, and reads text very well. Closed Google code: it needs Google Play services and sends usage statistics to Google (not your documents). Latin script only: Russian is read by Tesseract.</string>
+    <string name="choice_google_body">Finds and straightens pages most reliably, on any background, and reads text very well. Closed Google code: it needs Google Play services and sends usage statistics to Google (not your documents). Latin script only: Russian is read by Tesseract.</string>
     <string name="choice_google_missing">Not available on this phone: Google Play services are missing.</string>
     <string name="choice_free">Open source</string>
     <string name="choice_free_body">The app\'s own page finder and Tesseract: free software, nothing goes to Google, seven languages. Less sure of the page on pale backgrounds (the corners are easy to adjust), blurred shots are flagged at once.</string>
@@ -186,4 +186,8 @@
         <item quantity="one">discard this page?</item>
         <item quantity="other">discard these %d pages?</item>
     </plurals>
+    <string name="error_login">wrong username or password</string>
+    <string name="error_unsupported">this phone cannot talk to the server</string>
+    <string name="error_no_connection">no connection to the server</string>
+    <string name="google_scanner_failed">Google scanner unavailable — the app\'s own camera instead: %1$s</string>
 </resources>

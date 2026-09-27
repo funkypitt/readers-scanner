@@ -82,7 +82,7 @@
     <string name="pages">páginas</string>
     <string name="search_hint">procurar nos nomes e no texto</string>
     <string name="nothing_found">nada encontrado</string>
-    <string name="account_hint">Uma pasta WebDAV partilha as digitalizações com os seus outros aparelhos (outro telemóvel, o Reader\'s Scanner no computador): cada documento em PDF pesquisável, numa subpasta com o nome da sua pasta, com uma pequena descrição em .readers-scanner. Os documentos de outro lado aparecem logo; o PDF descarrega-se quando os abre. kDrive: servidor https://ID.connect.kdrive.infomaniak.com (o ID é o número no endereço web do kDrive), o seu utilizador Infomaniak e uma palavra-passe de aplicação se tiver a verificação em dois passos. O Nextcloud e qualquer servidor WebDAV funcionam da mesma forma.</string>
+    <string name="account_hint">Uma pasta WebDAV partilha as digitalizações com os seus outros aparelhos (outro telemóvel, o Reader\'s Scanner no computador): cada documento em PDF pesquisável, numa subpasta com o nome da sua pasta. Os documentos digitalizados noutros aparelhos aparecem logo; o PDF descarrega-se quando os abre. kDrive: servidor https://ID.connect.kdrive.infomaniak.com (o ID é o número no endereço web do kDrive), o seu utilizador Infomaniak e uma palavra-passe de aplicação se tiver a verificação em dois passos. O Nextcloud e qualquer servidor WebDAV funcionam da mesma forma.</string>
     <string name="server">servidor</string>
     <string name="server_prompt">servidor (https://…)</string>
     <string name="username">utilizador</string>
@@ -124,7 +124,7 @@
     <string name="reader_fast">Tesseract rápido</string>
     <string name="reader_best">Tesseract melhor</string>
     <string name="engine_mlkit">ML Kit (Google)</string>
-    <string name="engine_readers">Reader\'s (câmara própria)</string>
+    <string name="engine_readers">integrado (software livre)</string>
     <string name="engine_tesseract">Tesseract (software livre)</string>
     <string name="capture_engine">encontrar a página</string>
     <string name="text_engine">ler o texto</string>
@@ -186,4 +186,8 @@
         <item quantity="one">descartar esta página?</item>
         <item quantity="other">descartar estas %d páginas?</item>
     </plurals>
+    <string name="error_login">utilizador ou palavra-passe errados</string>
+    <string name="error_unsupported">este telemóvel não consegue comunicar com o servidor</string>
+    <string name="error_no_connection">sem ligação ao servidor</string>
+    <string name="google_scanner_failed">digitalizador Google indisponível — usa-se a câmara própria: %1$s</string>
 </resources>

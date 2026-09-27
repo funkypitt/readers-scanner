@@ -8,6 +8,7 @@ import com.freedomfighter.readersscanner.data.Ocr
 import com.freedomfighter.readersscanner.data.Prefs
 import com.freedomfighter.readersscanner.data.Store
 import com.freedomfighter.readersscanner.sync.Sync
+import com.freedomfighter.readersscanner.sync.WebDavException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -40,6 +41,14 @@ class App : Application() {
         Ocr.start(this)
     }
 
+    /** The words for a failed sync: our own for what we know, the message (an HTTP code) otherwise. */
+    private fun reason(e: Exception): String = when {
+        e is WebDavException && e.reason == WebDavException.Reason.LOGIN -> getString(R.string.error_login)
+        e is WebDavException && e.reason == WebDavException.Reason.UNSUPPORTED -> getString(R.string.error_unsupported)
+        e is java.net.UnknownHostException || e is java.net.ConnectException || e is java.net.SocketTimeoutException -> getString(R.string.error_no_connection)
+        else -> e.message ?: e.javaClass.simpleName
+    }
+
     /** Sends what changed to the WebDAV folder, if one is set. Calls during a run make one more run. */
     fun sync(delayMs: Long = 0) {
         val s = prefs.settings.value
@@ -55,7 +64,7 @@ class App : Application() {
                         val r = Sync.run(this@App, prefs.settings.value)
                         val t = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
                         listOfNotNull(getString(R.string.synced_at, t), if (r.uploaded > 0) getString(R.string.n_sent, r.uploaded) else null, if (r.deleted > 0) getString(R.string.n_removed, r.deleted) else null, if (r.downloaded > 0) getString(R.string.n_received, r.downloaded) else null).joinToString(" · ")
-                    } catch (e: Exception) { getString(R.string.sync_failed, e.message ?: e.javaClass.simpleName) }
+                    } catch (e: Exception) { getString(R.string.sync_failed, reason(e)) }
                 } while (synchronized(this@App) { again })
             }
         }
