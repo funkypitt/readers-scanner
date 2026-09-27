@@ -1,4 +1,4 @@
-# Reader's Scanner for the desktop — design (2026-09-26, not started)
+# Reader's Scanner for the desktop — design (2026-09-26; built 2026-09-27 in readers-scanner-desktop)
 
 A desktop twin of the Android app for a real scanner (flatbed and document feeder), sharing the
 phone's folders through the same WebDAV folder, with NAPS2 doing the acquisition and the app

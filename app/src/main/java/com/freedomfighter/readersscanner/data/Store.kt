@@ -251,16 +251,18 @@ object Store {
     /** Title and text, matched without case or accents. */
     fun search(query: String): List<Pair<Doc, String?>> {
         val q = fold(query.trim())
-        if (q.isEmpty()) return emptyList()
+        val words = q.split(Regex("\\s+")).filter { it.isNotEmpty() }
+        if (words.isEmpty()) return emptyList()
         return docs().mapNotNull { d ->
             val text = text(d).joinToString("\n")
             val folded = fold(text)
-            val at = folded.indexOf(q)
-            when {
-                at >= 0 -> d to snippet(text, at, q.length)
-                fold(title(d)).contains(q) -> d to null
-                else -> null
-            }
+            val title = fold(title(d))
+            // every word asked, in any order, in the text or in the name
+            if (!words.all { folded.contains(it) || title.contains(it) }) return@mapNotNull null
+            var at = folded.indexOf(q)
+            var n = q.length
+            if (at < 0) words.filter { folded.contains(it) }.minByOrNull { folded.indexOf(it) }?.let { at = folded.indexOf(it); n = it.length }
+            d to (if (at >= 0 && folded.length == text.length) snippet(text, at, n) else null)
         }
     }
 

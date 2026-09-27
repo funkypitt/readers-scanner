@@ -66,7 +66,7 @@ object Sync {
 
     private fun folderName(d: Doc) = Store.folder(d.folder)?.name.orEmpty()
     /** What the description depends on here. */
-    private fun key(d: Doc) = "${d.rev}|${d.ocr}|${Store.title(d)}|${folderName(d)}|${d.lang}|${d.remote}"
+    private fun key(d: Doc) = "${d.rev}|${d.ocr}|${Store.title(d)}|${folderName(d)}|${d.lang}|${d.remote}|${d.named}"
     /** What the PDF depends on. */
     private fun pdfKey(d: Doc) = "${d.rev}|${d.ocr}"
 
@@ -142,7 +142,7 @@ object Sync {
         // --- 1. documents described on the server ----------------------------------------------
         for ((id, mf) in metas) {
             val local = Store.doc(id)
-            val sent = state[id]
+            var sent = state[id]
             if (local == null) {
                 if (sent != null && (sent.metaEtag == null || sent.metaEtag == mf.etag)) {
                     // deleted here, unchanged there: deleted there too
@@ -180,6 +180,9 @@ object Sync {
                     writeState(context, state); down++
                     continue
                 }
+                // ours is the latest; its file is where they left it (renamed there meanwhile, it
+                // would otherwise stay behind under their name)
+                sent = sent?.copy(path = m.pdf, etag = pdfs[m.pdf]?.etag) ?: Sent(m.pdf, pdfs[m.pdf]?.etag, "")
             }
             // ours is the latest, or sent by 1.0.x without a description yet
             if ((changedHere || sent?.metaEtag == null) && local.ocr != OcrState.PENDING) upload(local, sent)
