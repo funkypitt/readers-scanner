@@ -115,9 +115,13 @@
 ## Naming
 
 `Store.title` = `yyyy-MM-dd HH'h'mm` + name. The name is the user's (filing sheet or rename), or
-`Naming.firstWords` of page 1: whole lines until 3 words (max 5 words / 40 characters), debris
-lines skipped, never ending on a short lower-case word. Clearing the name in "rename" hands it
-back to the OCR words at the next reading.
+none: the document is then called by its date. **Since 1.1.2 no name is made from the text**
+(it was the first words read on page 1; the user: « the automatic name was not a great idea » —
+a heading skipped, a line of a table taken). The filing sheet asks for the name instead: its
+field has the keyboard as the sheet opens, « Done » puts the keyboard away and leaves the
+folders. Documents named by earlier versions keep the name they have. `tools/strings.py` is
+again the source of every text (1.1.1 had edited the XML files directly: the table was rebuilt
+from them).
 
 ## Testing
 

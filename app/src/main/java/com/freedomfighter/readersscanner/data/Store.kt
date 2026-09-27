@@ -31,7 +31,7 @@ data class Doc(
     val id: String,
     /** Capture time, epoch milliseconds: it is always the start of the file name. */
     val created: Long,
-    /** The user's name, or the first words the OCR read; null until either exists. */
+    /** The name the user gave it; null when none (the document is then called by its date). Documents of versions up to 1.1.1 may carry the first words of their text. */
     val name: String?,
     /** True when the user typed the name: the OCR then never replaces it. */
     val named: Boolean,
@@ -214,8 +214,7 @@ object Store {
         if (d.rev != rev) { pdf?.delete(); return }
         atomicWrite(textFile(d), pages.joinToString(PAGE_BREAK))
         if (pdf != null) pdf.renameTo(pdfFile(d))
-        val words = if (d.named) null else Naming.firstWords(pages.firstOrNull { it.isNotBlank() }.orEmpty())
-        writeDoc(d.copy(ocr = OcrState.DONE, name = if (d.named) d.name else words ?: d.name, readBy = readBy))
+        writeDoc(d.copy(ocr = OcrState.DONE, readBy = readBy))
         changed()
     }
 
@@ -358,38 +357,3 @@ object Reflow {
 /** A folder name the server and a desktop will both accept (it is a folder on the server); null when nothing is left. */
 fun folderNameOf(name: String): String? =
     name.replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), " ").replace(Regex("\\s+"), " ").trim().trim('.').trim().takeIf { it.isNotEmpty() }?.take(60)
-
-/** The name a document gets from its text when the user gave none. */
-object Naming {
-    private val word = Regex("[\\p{L}\\p{N}][\\p{L}\\p{N}'’.\\-]*")
-
-    /**
-     * The first few real words of the page: runs of letters with at least two letters, skipping
-     * the debris OCR leaves around pictures and rules. Null when nothing reads as words.
-     */
-    fun firstWords(text: String, max: Int = 5, maxChars: Int = 40): String? {
-        val words = mutableListOf<String>()
-        var full = false
-        for (line in text.lineSequence()) {
-            val tokens = word.findAll(line).map { it.value.trim('.', '-', '\'', '’') }.toList()
-            val good = tokens.filter { isWord(it) }
-            // A line that is mostly debris is skipped; once words are found, it ends the title.
-            if (good.isEmpty() || good.size * 2 < tokens.size) { if (words.isNotEmpty()) break else continue }
-            for (t in good) {
-                if (words.size >= max || (words.joinToString(" ").length + t.length + 1) > maxChars) { full = true; break }
-                words.add(t)
-            }
-            // whole lines, until there are three words
-            if (full || words.size >= 3) break
-        }
-        // never end on a little word ("de", "of", "и")
-        while (words.size > 1 && words.last().length <= 3 && words.last().all { it.isLowerCase() }) words.removeAt(words.size - 1)
-        return words.joinToString(" ").takeIf { it.isNotBlank() }
-    }
-
-    private fun isWord(t: String): Boolean {
-        val letters = t.count { it.isLetter() }
-        val digits = t.count { it.isDigit() }
-        return (letters >= 2 && letters * 10 >= t.length * 6) || (digits >= 2 && letters == 0 && t.length <= 10)
-    }
-}

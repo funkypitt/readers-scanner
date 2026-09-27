@@ -12,7 +12,7 @@
     <string name="new_folder">новая папка</string>
     <string name="new_folder_name">название новой папки</string>
     <string name="rename">переименовать</string>
-    <string name="rename_hint">название (пусто — первые слова текста)</string>
+    <string name="rename_hint">название (пусто — только дата)</string>
     <string name="delete_folder">удалить папку</string>
     <string name="delete_folder_q">удалить папку « %1$s »? Её сканы останутся во «всех сканах».</string>
     <string name="delete_folder_keep">удалить папку, сохранить сканы</string>
@@ -49,9 +49,9 @@
     <string name="whole_photo">всё фото</string>
     <string name="find_page">найти страницу</string>
     <string name="searching">поиск…</string>
-    <string name="name_optional">название</string>
+    <string name="name_optional">назвать документ</string>
     <string name="name_placeholder">необязательно</string>
-    <string name="name_hint">Имя файла начинается с даты и часа. Без названия за ними следуют первые слова, прочитанные на странице.</string>
+    <string name="name_hint">Имя файла начинается с даты и часа; название идёт за ними. Без названия остаются только они.</string>
     <string name="file_in">положить в</string>
     <string name="reading_text">чтение текста %1$s</string>
     <string name="text_waiting">текст ещё не прочитан</string>
@@ -158,6 +158,10 @@
     <string name="from_elsewhere">отсканировано в другом месте</string>
     <string name="n_received">получено: %1$d</string>
     <string name="shortcut_scan">Новый скан</string>
+    <string name="error_login">неверное имя пользователя или пароль</string>
+    <string name="error_unsupported">этот телефон не может связаться с сервером</string>
+    <string name="error_no_connection">нет связи с сервером</string>
+    <string name="google_scanner_failed">сканер Google недоступен — вместо него своя камера: %1$s</string>
     <plurals name="n_pages">
         <item quantity="one">%d страница</item>
         <item quantity="few">%d страницы</item>
@@ -200,8 +204,4 @@
         <item quantity="many">отменить %d страниц?</item>
         <item quantity="other">отменить %d страницы?</item>
     </plurals>
-    <string name="error_login">неверное имя пользователя или пароль</string>
-    <string name="error_unsupported">этот телефон не может связаться с сервером</string>
-    <string name="error_no_connection">нет связи с сервером</string>
-    <string name="google_scanner_failed">сканер Google недоступен — вместо него своя камера: %1$s</string>
 </resources>

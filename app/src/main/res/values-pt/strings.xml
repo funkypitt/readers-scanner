@@ -12,7 +12,7 @@
     <string name="new_folder">nova pasta</string>
     <string name="new_folder_name">nome da nova pasta</string>
     <string name="rename">mudar o nome</string>
-    <string name="rename_hint">nome (vazio: as primeiras palavras do texto)</string>
+    <string name="rename_hint">nome (vazio: só a data)</string>
     <string name="delete_folder">eliminar a pasta</string>
     <string name="delete_folder_q">eliminar a pasta « %1$s »? As digitalizações ficam em todas as digitalizações.</string>
     <string name="delete_folder_keep">eliminar a pasta, manter as digitalizações</string>
@@ -49,9 +49,9 @@
     <string name="whole_photo">foto inteira</string>
     <string name="find_page">procurar a página</string>
     <string name="searching">a procurar…</string>
-    <string name="name_optional">nome</string>
+    <string name="name_optional">dar um nome a este documento</string>
     <string name="name_placeholder">opcional</string>
-    <string name="name_hint">O nome do ficheiro começa pela data e a hora. Sem nome, seguem-se as primeiras palavras lidas na página.</string>
+    <string name="name_hint">O nome do ficheiro começa pela data e a hora; o nome segue-as. Sem nome, ficam sozinhas.</string>
     <string name="file_in">guardar em</string>
     <string name="reading_text">a ler o texto %1$s</string>
     <string name="text_waiting">texto por ler</string>
@@ -158,6 +158,10 @@
     <string name="from_elsewhere">digitalizado noutro lado</string>
     <string name="n_received">%1$d recebido(s)</string>
     <string name="shortcut_scan">Nova digitalização</string>
+    <string name="error_login">utilizador ou palavra-passe errados</string>
+    <string name="error_unsupported">este telemóvel não consegue comunicar com o servidor</string>
+    <string name="error_no_connection">sem ligação ao servidor</string>
+    <string name="google_scanner_failed">digitalizador Google indisponível — usa-se a câmara própria: %1$s</string>
     <plurals name="n_pages">
         <item quantity="one">%d página</item>
         <item quantity="other">%d páginas</item>
@@ -186,8 +190,4 @@
         <item quantity="one">descartar esta página?</item>
         <item quantity="other">descartar estas %d páginas?</item>
     </plurals>
-    <string name="error_login">utilizador ou palavra-passe errados</string>
-    <string name="error_unsupported">este telemóvel não consegue comunicar com o servidor</string>
-    <string name="error_no_connection">sem ligação ao servidor</string>
-    <string name="google_scanner_failed">digitalizador Google indisponível — usa-se a câmara própria: %1$s</string>
 </resources>

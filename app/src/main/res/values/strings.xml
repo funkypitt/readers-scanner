@@ -12,7 +12,7 @@
     <string name="new_folder">new folder</string>
     <string name="new_folder_name">name of the new folder</string>
     <string name="rename">rename</string>
-    <string name="rename_hint">name (empty: the first words of the text)</string>
+    <string name="rename_hint">name (empty: the date alone)</string>
     <string name="delete_folder">delete the folder</string>
     <string name="delete_folder_q">delete the folder « %1$s »? Its scans stay in all scans.</string>
     <string name="delete_folder_keep">delete the folder, keep the scans</string>
@@ -49,9 +49,9 @@
     <string name="whole_photo">whole photo</string>
     <string name="find_page">find the page</string>
     <string name="searching">searching…</string>
-    <string name="name_optional">name</string>
+    <string name="name_optional">name this document</string>
     <string name="name_placeholder">optional</string>
-    <string name="name_hint">The file name starts with the date and hour. Without a name, the first words read on the page follow them.</string>
+    <string name="name_hint">The file name starts with the date and hour; the name follows them. Without a name, they stand alone.</string>
     <string name="file_in">file in</string>
     <string name="reading_text">reading the text %1$s</string>
     <string name="text_waiting">text to be read</string>
@@ -158,6 +158,10 @@
     <string name="from_elsewhere">scanned elsewhere</string>
     <string name="n_received">%1$d received</string>
     <string name="shortcut_scan">New scan</string>
+    <string name="error_login">wrong username or password</string>
+    <string name="error_unsupported">this phone cannot talk to the server</string>
+    <string name="error_no_connection">no connection to the server</string>
+    <string name="google_scanner_failed">Google scanner unavailable — the app\'s own camera instead: %1$s</string>
     <plurals name="n_pages">
         <item quantity="one">%d page</item>
         <item quantity="other">%d pages</item>
@@ -186,8 +190,4 @@
         <item quantity="one">discard this page?</item>
         <item quantity="other">discard these %d pages?</item>
     </plurals>
-    <string name="error_login">wrong username or password</string>
-    <string name="error_unsupported">this phone cannot talk to the server</string>
-    <string name="error_no_connection">no connection to the server</string>
-    <string name="google_scanner_failed">Google scanner unavailable — the app\'s own camera instead: %1$s</string>
 </resources>

@@ -27,7 +27,7 @@ enum class Reader(val key: String) { TESSERACT_FAST("tesseract-fast"), TESSERACT
  * Reads the text of filed documents, one at a time, on the phone: Tesseract 5 in the language
  * chosen on the capture screen (its "best" model when downloaded, else the "fast" one inside
  * the app), or, in the private build and when chosen, Google's ML Kit. Writes the text and the
- * searchable PDF, then names the document after its first words if the user gave it no name.
+ * searchable PDF.
  * Documents still waiting when the app was closed are taken up again at the next start.
  */
 object Ocr {

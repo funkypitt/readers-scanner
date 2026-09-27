@@ -3,7 +3,7 @@
 # Reader's Scanner
 
 Scans documents with the camera, one page or many, and reads their text on the phone. Each
-document becomes a searchable PDF named after its date and first words, filed in big plain
+document becomes a searchable PDF named by you, after its date, filed in big plain
 folders, and copied to your own WebDAV folder (kDrive, Nextcloud…) if you like. Black and white,
 text only.
 
@@ -20,8 +20,9 @@ text only.
 - **Text**: seven languages (English, French, German, Italian, Spanish, Portuguese, Russian),
   chosen on top of the capture screen; optional "best" Tesseract models. The PDF carries the text
   invisibly over the page: search it, copy it.
-- **Names**: every file starts with the date and hour of capture; then your name for it, or the
-  first words read on the page (`2026-09-24 11h32 Facture d'électricité.pdf`).
+- **Names**: when a scan is filed, the app asks for its name. Every file starts with the date and
+  hour of capture, then the name (`2026-09-24 11h32 Facture d'électricité.pdf`); without a name,
+  the date and hour alone.
 - **Page format**: automatic, A series or US Letter — a page of that paper gets its exact
   proportions and the PDF its size.
 - **Folders, search, sharing**: "all scans" holds everything; search looks through names and

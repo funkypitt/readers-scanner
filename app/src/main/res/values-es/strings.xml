@@ -12,7 +12,7 @@
     <string name="new_folder">nueva carpeta</string>
     <string name="new_folder_name">nombre de la nueva carpeta</string>
     <string name="rename">cambiar el nombre</string>
-    <string name="rename_hint">nombre (vacío: las primeras palabras del texto)</string>
+    <string name="rename_hint">nombre (vacío: solo la fecha)</string>
     <string name="delete_folder">eliminar la carpeta</string>
     <string name="delete_folder_q">¿eliminar la carpeta « %1$s »? Sus escaneos siguen en todos los escaneos.</string>
     <string name="delete_folder_keep">eliminar la carpeta, conservar los escaneos</string>
@@ -49,9 +49,9 @@
     <string name="whole_photo">foto entera</string>
     <string name="find_page">buscar la página</string>
     <string name="searching">buscando…</string>
-    <string name="name_optional">nombre</string>
+    <string name="name_optional">nombrar este documento</string>
     <string name="name_placeholder">opcional</string>
-    <string name="name_hint">El nombre del archivo empieza por la fecha y la hora. Sin nombre, les siguen las primeras palabras leídas en la página.</string>
+    <string name="name_hint">El nombre del archivo empieza por la fecha y la hora; el nombre las sigue. Sin nombre, quedan solas.</string>
     <string name="file_in">guardar en</string>
     <string name="reading_text">leyendo el texto %1$s</string>
     <string name="text_waiting">texto por leer</string>
@@ -158,6 +158,10 @@
     <string name="from_elsewhere">escaneado en otro lugar</string>
     <string name="n_received">%1$d recibido(s)</string>
     <string name="shortcut_scan">Nuevo escaneo</string>
+    <string name="error_login">usuario o contraseña incorrectos</string>
+    <string name="error_unsupported">este teléfono no puede comunicarse con el servidor</string>
+    <string name="error_no_connection">sin conexión con el servidor</string>
+    <string name="google_scanner_failed">escáner de Google no disponible — se usa la cámara propia: %1$s</string>
     <plurals name="n_pages">
         <item quantity="one">%d página</item>
         <item quantity="other">%d páginas</item>
@@ -186,8 +190,4 @@
         <item quantity="one">¿descartar esta página?</item>
         <item quantity="other">¿descartar estas %d páginas?</item>
     </plurals>
-    <string name="error_login">usuario o contraseña incorrectos</string>
-    <string name="error_unsupported">este teléfono no puede comunicarse con el servidor</string>
-    <string name="error_no_connection">sin conexión con el servidor</string>
-    <string name="google_scanner_failed">escáner de Google no disponible — se usa la cámara propia: %1$s</string>
 </resources>

@@ -12,7 +12,7 @@
     <string name="new_folder">neuer Ordner</string>
     <string name="new_folder_name">Name des neuen Ordners</string>
     <string name="rename">umbenennen</string>
-    <string name="rename_hint">Name (leer: die ersten Wörter des Textes)</string>
+    <string name="rename_hint">Name (leer: nur das Datum)</string>
     <string name="delete_folder">Ordner löschen</string>
     <string name="delete_folder_q">den Ordner « %1$s » löschen? Seine Scans bleiben in „alle Scans“.</string>
     <string name="delete_folder_keep">Ordner löschen, Scans behalten</string>
@@ -49,9 +49,9 @@
     <string name="whole_photo">ganzes Foto</string>
     <string name="find_page">Seite finden</string>
     <string name="searching">suche…</string>
-    <string name="name_optional">Name</string>
+    <string name="name_optional">dieses Dokument benennen</string>
     <string name="name_placeholder">freiwillig</string>
-    <string name="name_hint">Der Dateiname beginnt mit Datum und Uhrzeit. Ohne Namen folgen die ersten auf der Seite gelesenen Wörter.</string>
+    <string name="name_hint">Der Dateiname beginnt mit Datum und Uhrzeit; der Name folgt. Ohne Namen stehen sie allein.</string>
     <string name="file_in">ablegen in</string>
     <string name="reading_text">Text wird gelesen %1$s</string>
     <string name="text_waiting">Text wird noch gelesen</string>
@@ -158,6 +158,10 @@
     <string name="from_elsewhere">anderswo gescannt</string>
     <string name="n_received">%1$d empfangen</string>
     <string name="shortcut_scan">Neuer Scan</string>
+    <string name="error_login">Benutzername oder Passwort falsch</string>
+    <string name="error_unsupported">dieses Telefon kann nicht mit dem Server sprechen</string>
+    <string name="error_no_connection">keine Verbindung zum Server</string>
+    <string name="google_scanner_failed">Google-Scanner nicht verfügbar — stattdessen die eigene Kamera: %1$s</string>
     <plurals name="n_pages">
         <item quantity="one">%d Seite</item>
         <item quantity="other">%d Seiten</item>
@@ -186,8 +190,4 @@
         <item quantity="one">diese Seite verwerfen?</item>
         <item quantity="other">diese %d Seiten verwerfen?</item>
     </plurals>
-    <string name="error_login">Benutzername oder Passwort falsch</string>
-    <string name="error_unsupported">dieses Telefon kann nicht mit dem Server sprechen</string>
-    <string name="error_no_connection">keine Verbindung zum Server</string>
-    <string name="google_scanner_failed">Google-Scanner nicht verfügbar — stattdessen die eigene Kamera: %1$s</string>
 </resources>

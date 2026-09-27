@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
@@ -61,6 +62,7 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -457,6 +459,12 @@ private fun FileSheet(a: ScanActivity, onDismiss: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var newFolder by remember { mutableStateOf(false) }
     val preferred = a.folder
+    // the name is asked for: the field has the keyboard as the sheet opens. « Done » puts the
+    // keyboard away and leaves the folders, of which three show above it meanwhile.
+    val focus = remember { androidx.compose.ui.focus.FocusRequester() }
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    val typing = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    LaunchedEffect(Unit) { kotlinx.coroutines.delay(200); runCatching { focus.requestFocus() } }
     BackHandler(onBack = onDismiss)
     Box(
         Modifier.fillMaxSize().background(colors.bg.copy(alpha = 0.6f)).noRippleClickable(onClick = onDismiss)
@@ -467,15 +475,16 @@ private fun FileSheet(a: ScanActivity, onDismiss: () -> Unit) {
             Small(stringResource(R.string.name_optional), Modifier.padding(horizontal = rowPadH).padding(top = 14.dp))
             ReaderTextField(
                 value = name, onValueChange = { name = it },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = rowPadH, vertical = 10.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = rowPadH, vertical = 10.dp).focusRequester(focus),
                 placeholder = stringResource(R.string.name_placeholder),
                 imeAction = androidx.compose.ui.text.input.ImeAction.Done,
+                onImeAction = { keyboard?.hide() },
                 capitalize = true
             )
-            Small(stringResource(R.string.name_hint), Modifier.padding(horizontal = rowPadH).padding(bottom = 10.dp), maxLines = 3)
+            if (!typing) Small(stringResource(R.string.name_hint), Modifier.padding(horizontal = rowPadH).padding(bottom = 10.dp), maxLines = 3)
             Rule()
             Small(stringResource(R.string.file_in), Modifier.padding(horizontal = rowPadH).padding(top = 14.dp, bottom = 2.dp), maxLines = 1)
-            Column(Modifier.heightIn(max = 380.dp).verticalScroll(rememberScrollState())) {
+            Column(Modifier.heightIn(max = if (typing) 170.dp else 380.dp).verticalScroll(rememberScrollState())) {
                 val ordered = folders.sortedBy { if (it.id == preferred) 0 else 1 }
                 if (preferred == null) TextRow("▣  " + stringResource(R.string.all_scans), inverted = true) { a.file(null, name) }
                 ordered.forEach { f -> TextRow("▢  " + f.name, inverted = f.id == preferred) { a.file(f.id, name) } }

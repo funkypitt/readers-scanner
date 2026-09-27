@@ -12,7 +12,7 @@
     <string name="new_folder">nouveau dossier</string>
     <string name="new_folder_name">nom du nouveau dossier</string>
     <string name="rename">renommer</string>
-    <string name="rename_hint">nom (vide : les premiers mots du texte)</string>
+    <string name="rename_hint">nom (vide : la date seule)</string>
     <string name="delete_folder">supprimer le dossier</string>
     <string name="delete_folder_q">supprimer le dossier « %1$s » ? Ses scans restent dans tous les scans.</string>
     <string name="delete_folder_keep">supprimer le dossier, garder les scans</string>
@@ -49,9 +49,9 @@
     <string name="whole_photo">photo entière</string>
     <string name="find_page">trouver la page</string>
     <string name="searching">recherche…</string>
-    <string name="name_optional">nom</string>
+    <string name="name_optional">nommer ce document</string>
     <string name="name_placeholder">facultatif</string>
-    <string name="name_hint">Le nom du fichier commence par la date et l\'heure. Sans nom, les premiers mots lus sur la page les suivent.</string>
+    <string name="name_hint">Le nom du fichier commence par la date et l\'heure ; le nom les suit. Sans nom, elles restent seules.</string>
     <string name="file_in">ranger dans</string>
     <string name="reading_text">lecture du texte %1$s</string>
     <string name="text_waiting">texte à lire</string>
@@ -158,6 +158,10 @@
     <string name="from_elsewhere">scanné ailleurs</string>
     <string name="n_received">%1$d reçu(s)</string>
     <string name="shortcut_scan">Nouveau scan</string>
+    <string name="error_login">identifiant ou mot de passe erroné</string>
+    <string name="error_unsupported">ce téléphone ne peut pas dialoguer avec le serveur</string>
+    <string name="error_no_connection">pas de connexion au serveur</string>
+    <string name="google_scanner_failed">scanner Google indisponible — la caméra de l\'app à la place : %1$s</string>
     <plurals name="n_pages">
         <item quantity="one">%d page</item>
         <item quantity="other">%d pages</item>
@@ -186,8 +190,4 @@
         <item quantity="one">abandonner cette page ?</item>
         <item quantity="other">abandonner ces %d pages ?</item>
     </plurals>
-    <string name="error_login">identifiant ou mot de passe erroné</string>
-    <string name="error_unsupported">ce téléphone ne peut pas dialoguer avec le serveur</string>
-    <string name="error_no_connection">pas de connexion au serveur</string>
-    <string name="google_scanner_failed">scanner Google indisponible — la caméra de l\'app à la place : %1$s</string>
 </resources>
