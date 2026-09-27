@@ -33,6 +33,8 @@ text only.
 
 More detail: [docs/NOTES.md](docs/NOTES.md).
 
+On the desktop (Windows, macOS, Linux), [Reader's Scanner](https://github.com/funkypitt/readers-scanner-desktop) drives a real scanner and shares the same folders through the same WebDAV folder.
+
 ## Install
 
 [<img src="docs/badge_obtainium.png" alt="Get it on Obtainium" height="48">](https://gallaz.ch/eink/#readers-scanner)

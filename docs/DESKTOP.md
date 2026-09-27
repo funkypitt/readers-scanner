@@ -1,4 +1,10 @@
-# Reader's Scanner for the desktop — design (2026-09-26; built 2026-09-27 in readers-scanner-desktop)
+# Reader's Scanner for the desktop — design (2026-09-26)
+
+> **Built and released: [readers-scanner-desktop](https://github.com/funkypitt/readers-scanner-desktop) 1.0.0, 2026-09-27.**
+> One thing below is no longer true: NAPS2 is not required. The first day on a real scanner showed
+> what the layers cost (a stack of four sheets delivered as one page), and scanners that speak
+> eSCL (AirScan, Mopria) are now asked directly; NAPS2 is the way to the others. What was learnt
+> is in that repository's `docs/NOTES.md`. The rest of this page is the design as it was written.
 
 A desktop twin of the Android app for a real scanner (flatbed and document feeder), sharing the
 phone's folders through the same WebDAV folder, with NAPS2 doing the acquisition and the app
