@@ -720,6 +720,13 @@ fun SettingsScreen(nav: Nav, app: App) {
     val notCredentials = stringResource(R.string.credentials_not_a_file)
     val nothingForUs = stringResource(R.string.credentials_nothing, stringResource(R.string.app_name))
     val imported = stringResource(R.string.credentials_imported)
+    // the export: saved where the person chooses, then offered to the share menu
+    var saved by remember { mutableStateOf(false) }
+    val save = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val cur = app.prefs.settings.value
+        saved = CredentialsShare.save(context, uri, Credentials.FILE_NAME, Credentials.build(cur.server, cur.folder, cur.username, cur.password))
+    }
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
         credMessage = try {
@@ -748,9 +755,8 @@ fun SettingsScreen(nav: Nav, app: App) {
                 TextRow(s.folder, secondary = stringResource(R.string.folder)) { prompt = "folder" }
                 TextRow(if (s.syncOnOpen) stringResource(R.string.on) else stringResource(R.string.off), secondary = stringResource(R.string.sync_on_open)) { app.prefs.setSyncOnOpen(!s.syncOnOpen) }
                 if (s.configured) TextRow(stringResource(R.string.sync_now), secondary = status.ifBlank { null }) { app.sync() }
-                val shareTitle = stringResource(R.string.export_credentials)
-                if (s.configured) TextRow(shareTitle, secondary = stringResource(R.string.export_credentials_hint)) {
-                    CredentialsShare.share(context, Credentials.build(s.server, s.folder, s.username, s.password), shareTitle)
+                if (s.configured) TextRow(stringResource(R.string.export_credentials), secondary = stringResource(R.string.export_credentials_hint)) {
+                    runCatching { save.launch(Credentials.FILE_NAME) }
                 }
                 TextRow(stringResource(R.string.import_credentials), secondary = credMessage.ifBlank { null }) {
                     credMessage = ""
@@ -794,6 +800,12 @@ fun SettingsScreen(nav: Nav, app: App) {
                 VSpace(16.dp)
             }
             Box(Modifier.windowInsetsPadding(WindowInsets.navigationBars))
+        }
+        if (saved) {
+            val shareTitle = stringResource(R.string.share_export)
+            TextMenu(stringResource(R.string.export_saved, Credentials.FILE_NAME), listOf(MenuItem(shareTitle) {
+                CredentialsShare.share(context, Credentials.FILE_NAME, "application/json", shareTitle)
+            }), onDismiss = { saved = false })
         }
         prompt?.let { which ->
             val title = when (which) { "server" -> stringResource(R.string.server_prompt); "username" -> stringResource(R.string.username); "password" -> stringResource(R.string.password); else -> stringResource(R.string.folder) }

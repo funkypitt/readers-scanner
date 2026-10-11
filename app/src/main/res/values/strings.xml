@@ -97,6 +97,8 @@
     <string name="sync_failed">not sent: %1$s</string>
     <string name="export_credentials">export credentials</string>
     <string name="export_credentials_hint">a file to set up another device — it holds the password</string>
+    <string name="export_saved">saved as %1$s</string>
+    <string name="share_export">share this file…</string>
     <string name="import_credentials">import credentials</string>
     <string name="credentials_not_a_file">not a Reader\'s credentials file</string>
     <string name="credentials_nothing">this file holds nothing for %1$s</string>

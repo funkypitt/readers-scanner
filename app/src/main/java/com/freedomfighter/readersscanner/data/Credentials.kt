@@ -15,7 +15,7 @@ object Credentials {
     val SAME_KIND = listOf("readers-notes" to "Reader's Notes", "readers-recorder" to "Reader's Recorder")
     /** Apps with the same login but a CalDAV address, useless here: only the login is taken. */
     val LOGIN_ONLY = listOf("readers-tasks" to "Reader's Tasks", "readers-calendar" to "Reader's Calendar")
-    const val FILE_NAME = "readers-credentials-scanner.json"
+    const val FILE_NAME = "readers-scanner-credentials.json"
 
     /** What a file brings; null = not in the file, keep what is set. */
     data class Account(val server: String?, val folder: String?, val username: String?, val password: String?)

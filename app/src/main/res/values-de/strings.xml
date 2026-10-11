@@ -97,6 +97,8 @@
     <string name="sync_failed">nicht gesendet: %1$s</string>
     <string name="export_credentials">Zugangsdaten exportieren</string>
     <string name="export_credentials_hint">eine Datei, um ein anderes Gerät einzurichten — sie enthält das Passwort</string>
+    <string name="export_saved">gespeichert als %1$s</string>
+    <string name="share_export">diese Datei teilen…</string>
     <string name="import_credentials">Zugangsdaten importieren</string>
     <string name="credentials_not_a_file">keine Reader\'s-Zugangsdatendatei</string>
     <string name="credentials_nothing">diese Datei enthält nichts für %1$s</string>

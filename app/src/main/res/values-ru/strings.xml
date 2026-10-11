@@ -97,6 +97,8 @@
     <string name="sync_failed">не отправлено: %1$s</string>
     <string name="export_credentials">экспортировать учётные данные</string>
     <string name="export_credentials_hint">файл для настройки другого устройства — в нём пароль</string>
+    <string name="export_saved">сохранено как %1$s</string>
+    <string name="share_export">поделиться этим файлом…</string>
     <string name="import_credentials">импортировать учётные данные</string>
     <string name="credentials_not_a_file">это не файл учётных данных Reader\'s</string>
     <string name="credentials_nothing">в этом файле нет ничего для %1$s</string>
