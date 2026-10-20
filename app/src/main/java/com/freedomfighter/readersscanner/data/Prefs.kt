@@ -5,7 +5,8 @@ import android.content.SharedPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-enum class ThemeMode { DARK, LIGHT, SYSTEM }
+/** The inks, the phone's choice between them, then the Plume palettes (see [Palettes]). */
+enum class ThemeMode { DARK, LIGHT, SYSTEM, LAVANDE, SAUGE, NORDIQUE, TERRACOTTA, COQUETTE, MILITANTE, TORRIDE, NATURE }
 enum class FontChoice { SERIF, SANS, MONO }
 enum class TextSize { SMALL, MEDIUM, LARGE }
 enum class Align { LEFT, CENTER }
@@ -96,10 +97,8 @@ class Prefs(context: Context) {
     fun setCapture(e: CaptureEngine) = sp.edit().putString("capture", e.name).apply()
     fun setReader(e: TextEngine) = sp.edit().putString("reader", e.name).apply()
     fun setSyncOnOpen(v: Boolean) = sp.edit().putBoolean("sync_on_open", v).apply()
-    fun toggleTheme(systemIsDark: Boolean) {
-        val dark = when (_settings.value.theme) { ThemeMode.DARK -> true; ThemeMode.LIGHT -> false; ThemeMode.SYSTEM -> systemIsDark }
-        setTheme(if (dark) ThemeMode.LIGHT else ThemeMode.DARK)
-    }
+    /** One tap: the next theme, round and round (the inks first, then the Plume palettes). */
+    fun nextTheme() = setTheme(Palettes.next(_settings.value.theme))
 }
 
 /** The languages whose Tesseract models ship inside the app (tessdata_fast). */

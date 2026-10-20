@@ -215,9 +215,9 @@ fun NewScanButton(onClick: () -> Unit) {
     val tick = rememberTick()
     Rule()
     Box(
-        Modifier.fillMaxWidth().background(colors.fg).noRippleClickable { tick(); onClick() }.padding(horizontal = rowPadH, vertical = 30.dp)
-    ) { T("+  " + stringResource(R.string.new_scan), color = colors.bg, maxLines = 1) }
-    Box(Modifier.fillMaxWidth().background(colors.fg).windowInsetsPadding(WindowInsets.navigationBars))
+        Modifier.fillMaxWidth().background(colors.accent).noRippleClickable { tick(); onClick() }.padding(horizontal = rowPadH, vertical = 30.dp)
+    ) { T("+  " + stringResource(R.string.new_scan), color = colors.onAccent, maxLines = 1) }
+    Box(Modifier.fillMaxWidth().background(colors.accent).windowInsetsPadding(WindowInsets.navigationBars))
 }
 
 @Composable
@@ -394,7 +394,7 @@ private fun DocRow(d: Doc, working: Pair<String, String>?, showFolder: Boolean, 
     val count = Store.pageCount(d)
     val pages = context.resources.getQuantityString(R.plurals.n_pages, count, count)
     val folderName = if (showFolder) d.folder?.let { Store.folder(it)?.name } else null
-    Row(Modifier.fillMaxWidth().background(if (mark == true) colors.fg.copy(alpha = 0.12f) else Color.Transparent).pressable(onClick, onLongPress).padding(horizontal = rowPadH, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().background(if (mark == true) colors.accent.copy(alpha = 0.12f) else Color.Transparent).pressable(onClick, onLongPress).padding(horizontal = rowPadH, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         if (mark != null) T(if (mark) "●" else "○", Modifier.padding(end = 16.dp), size = LocalTypo.current.title, maxLines = 1)
         Box(Modifier.size(56.dp, 74.dp).border(1.dp, colors.rule), contentAlignment = Alignment.Center) {
             bmp?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
@@ -786,7 +786,7 @@ fun SettingsScreen(nav: Nav, app: App) {
                     }
                 }
                 Rule(Modifier.padding(vertical = 8.dp))
-                TextRow(if (colors.isDark) stringResource(R.string.theme_dark) else stringResource(R.string.theme_light), secondary = stringResource(R.string.colours)) { app.prefs.toggleTheme(colors.isDark) }
+                TextRow(themeName(s.theme), secondary = stringResource(R.string.colours)) { app.prefs.nextTheme() }
                 TextRow(when (s.textSize) { TextSize.SMALL -> "S"; TextSize.MEDIUM -> "M"; TextSize.LARGE -> "L" }, secondary = stringResource(R.string.text_size)) {
                     app.prefs.setTextSize(when (s.textSize) { TextSize.SMALL -> TextSize.MEDIUM; TextSize.MEDIUM -> TextSize.LARGE; TextSize.LARGE -> TextSize.SMALL })
                 }

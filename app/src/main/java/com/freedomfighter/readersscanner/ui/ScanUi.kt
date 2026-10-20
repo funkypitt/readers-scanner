@@ -195,22 +195,28 @@ private fun CameraView(a: ScanActivity, app: App, onBack: () -> Unit) {
     }
 }
 
-/** The language the pages will be read in, one touch each, on top of the capture. */
+/**
+ * The language the pages will be read in, one touch each, on top of the capture. [dark]: over the
+ * camera, white on black whatever the theme; otherwise the theme's colours, the chosen language
+ * filled with the accent.
+ */
 @Composable
 fun LanguageChips(app: App, modifier: Modifier = Modifier, dark: Boolean = true) {
     val s by app.prefs.settings.collectAsState()
     val tick = rememberTick()
-    val fg = if (dark) Color.White else LocalColors.current.fg
-    val bg = if (dark) Color.Black else LocalColors.current.bg
+    val colors = LocalColors.current
+    val fg = if (dark) Color.White else colors.fg
+    val accent = if (dark) Color.White else colors.accent
+    val onAccent = if (dark) Color.Black else colors.onAccent
     Row(modifier.horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
         OcrLanguages.codes.forEach { code ->
             val on = code == s.ocrLanguage
             Box(
-                Modifier.padding(end = 6.dp).background(if (on) fg else Color.Transparent)
-                    .border(1.dp, if (on) fg else fg.copy(alpha = 0.35f))
+                Modifier.padding(end = 6.dp).background(if (on) accent else Color.Transparent)
+                    .border(1.dp, if (on) accent else fg.copy(alpha = 0.35f))
                     .noRippleClickable { tick(); app.prefs.setOcrLanguage(code) }
                     .padding(horizontal = 11.dp, vertical = 7.dp)
-            ) { T(OcrLanguages.short(code), size = LocalTypo.current.small, color = if (on) bg else fg, maxLines = 1) }
+            ) { T(OcrLanguages.short(code), size = LocalTypo.current.small, color = if (on) onAccent else fg, maxLines = 1) }
         }
     }
 }
@@ -271,11 +277,11 @@ private fun ReviewView(a: ScanActivity, app: App, onCrop: (Draft) -> Unit, onFil
             Rule()
             Row(Modifier.fillMaxWidth()) {
                 Box(Modifier.weight(1f)) { TextRow("+ " + stringResource(R.string.page), size = LocalTypo.current.title) { tick(); a.toCamera() } }
-                Box(Modifier.weight(1f).background(if (a.session.allReady) colors.fg else colors.rule).noRippleClickable(enabled = a.session.allReady) {
+                Box(Modifier.weight(1f).background(if (a.session.allReady) colors.accent else colors.rule).noRippleClickable(enabled = a.session.allReady) {
                     tick()
                     if (a.docId != null) a.file(null, null) else onFile()
                 }.padding(horizontal = rowPadH, vertical = rowPadV * 0.7f)) {
-                    T(stringResource(if (a.session.allReady) R.string.save else R.string.working), size = LocalTypo.current.title, color = colors.bg, maxLines = 1)
+                    T(stringResource(if (a.session.allReady) R.string.save else R.string.working), size = LocalTypo.current.title, color = if (a.session.allReady) colors.onAccent else colors.bg, maxLines = 1)
                 }
             }
             Box(Modifier.windowInsetsPadding(WindowInsets.navigationBars))
