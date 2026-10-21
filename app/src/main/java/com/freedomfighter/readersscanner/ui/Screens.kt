@@ -1,5 +1,10 @@
 package com.freedomfighter.readersscanner.ui
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
@@ -12,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
@@ -157,7 +163,11 @@ fun EngineChoiceScreen(app: App) {
 private fun Choice(title: String, body: String, enabled: Boolean, onClick: () -> Unit) {
     val colors = LocalColors.current
     val tick = rememberTick()
-    Column(Modifier.fillMaxWidth().noRippleClickable(enabled = enabled) { tick(); onClick() }.padding(horizontal = rowPadH, vertical = 22.dp)) {
+    val interaction = remember { MutableInteractionSource() }
+    val tiles = colors.tiles
+    Column(Modifier.fillMaxWidth().then(if (enabled) Modifier.tileCard(pressedTile(interaction)) else Modifier)
+        .clickable(interactionSource = interaction, indication = null, enabled = enabled) { tick(); onClick() }
+        .padding(horizontal = if (tiles && enabled) rowPadH - tileGap else rowPadH, vertical = 22.dp)) {
         T(title, size = LocalTypo.current.title, color = if (enabled) colors.fg else colors.dim, maxLines = 2)
         T(body, Modifier.padding(top = 8.dp), size = LocalTypo.current.small, color = colors.dim, lineHeightMul = 1.4f)
         if (enabled) T("→  " + stringResource(R.string.choice_this_one), Modifier.padding(top = 14.dp), size = LocalTypo.current.small * 1.1f, maxLines = 1)
@@ -180,7 +190,8 @@ fun HomeScreen(nav: Nav, app: App) {
     Page {
         Column(Modifier.fillMaxSize()) {
             ScreenTitleActions(stringResource(R.string.app_title), onBack = null, actions = listOf("⌕" to { nav.push(Screen.Search) }, "⋯" to { nav.push(Screen.Settings) }))
-            LazyVerticalGrid(GridCells.Fixed(2), Modifier.weight(1f).padding(horizontal = 14.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 14.dp)) {
+            val gridPad = if (LocalColors.current.tiles) 6.dp else 14.dp
+            LazyVerticalGrid(GridCells.Fixed(2), Modifier.weight(1f).padding(horizontal = gridPad), contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = gridPad)) {
                 item(key = "all") {
                     FolderTile(stringResource(R.string.all_scans), Store.count(null), filled = true, onClick = { nav.push(Screen.FolderView(null)) })
                 }
@@ -212,19 +223,25 @@ fun HomeScreen(nav: Nav, app: App) {
 @Composable
 fun NewScanButton(onClick: () -> Unit) {
     val colors = LocalColors.current
+    val tiles = colors.tiles
     val tick = rememberTick()
     Rule()
     Box(
-        Modifier.fillMaxWidth().background(colors.accent).noRippleClickable { tick(); onClick() }.padding(horizontal = rowPadH, vertical = 30.dp)
+        Modifier.fillMaxWidth().tileCard(colors.accent, vertical = 6.dp).background(colors.accent).noRippleClickable { tick(); onClick() }
+            .padding(horizontal = if (tiles) rowPadH - tileGap else rowPadH, vertical = 30.dp)
     ) { T("+  " + stringResource(R.string.new_scan), color = colors.onAccent, maxLines = 1) }
-    Box(Modifier.fillMaxWidth().background(colors.accent).windowInsetsPadding(WindowInsets.navigationBars))
+    // the inks run the accent down to the screen's edge; a card leaves the navigation bar on the surface
+    Box(Modifier.fillMaxWidth().background(if (tiles) Color.Transparent else colors.accent).windowInsetsPadding(WindowInsets.navigationBars))
 }
 
 @Composable
 private fun FolderTile(name: String, count: Int, filled: Boolean = false, onClick: () -> Unit, onLongPress: (() -> Unit)? = null) {
     val colors = LocalColors.current
+    val interaction = remember { MutableInteractionSource() }
     Column(
-        Modifier.fillMaxWidth().padding(10.dp).then(if (onLongPress != null) Modifier.pressable(onClick, onLongPress) else Modifier.noRippleClickable(onClick = onClick)),
+        Modifier.fillMaxWidth().tileCard(pressedTile(interaction), vertical = 6.dp, horizontal = 6.dp)
+            .then(if (onLongPress != null) Modifier.pressable(onClick, onLongPress, interaction) else Modifier.clickable(interactionSource = interaction, indication = null, onClick = onClick))
+            .padding(10.dp),
         horizontalAlignment = Alignment.Start
     ) {
         Box(Modifier.fillMaxWidth().aspectRatio(1.3f), contentAlignment = Alignment.Center) {
@@ -238,7 +255,8 @@ private fun FolderTile(name: String, count: Int, filled: Boolean = false, onClic
 @Composable
 private fun NewFolderTile(onClick: () -> Unit) {
     val colors = LocalColors.current
-    Column(Modifier.fillMaxWidth().padding(10.dp).noRippleClickable(onClick = onClick)) {
+    val interaction = remember { MutableInteractionSource() }
+    Column(Modifier.fillMaxWidth().tileCard(pressedTile(interaction), vertical = 6.dp, horizontal = 6.dp).clickable(interactionSource = interaction, indication = null, onClick = onClick).padding(10.dp)) {
         Box(Modifier.fillMaxWidth().aspectRatio(1.3f), contentAlignment = Alignment.Center) {
             FolderIcon(Modifier.fillMaxSize(), filled = false, dashed = true)
             T("+", Modifier.padding(top = 18.dp), size = LocalTypo.current.big * 0.8f, color = colors.dim, align = TextAlign.Center, maxLines = 1)
@@ -394,7 +412,10 @@ private fun DocRow(d: Doc, working: Pair<String, String>?, showFolder: Boolean, 
     val count = Store.pageCount(d)
     val pages = context.resources.getQuantityString(R.plurals.n_pages, count, count)
     val folderName = if (showFolder) d.folder?.let { Store.folder(it)?.name } else null
-    Row(Modifier.fillMaxWidth().background(if (mark == true) colors.accent.copy(alpha = 0.12f) else Color.Transparent).pressable(onClick, onLongPress).padding(horizontal = rowPadH, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+    val interaction = remember { MutableInteractionSource() }
+    val tiles = colors.tiles
+    Row(Modifier.fillMaxWidth().tileCard(pressedTile(interaction)).background(if (mark == true) colors.accent.copy(alpha = 0.12f) else Color.Transparent)
+        .pressable(onClick, onLongPress, interaction).padding(horizontal = if (tiles) rowPadH - tileGap else rowPadH, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         if (mark != null) T(if (mark) "●" else "○", Modifier.padding(end = 16.dp), size = LocalTypo.current.title, maxLines = 1)
         Box(Modifier.size(56.dp, 74.dp).border(1.dp, colors.rule), contentAlignment = Alignment.Center) {
             bmp?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
@@ -664,7 +685,9 @@ fun SearchScreen(nav: Nav) {
             LazyColumn(Modifier.weight(1f)) {
                 if (query.isNotBlank() && results.isEmpty()) item { Small(stringResource(R.string.nothing_found), Modifier.padding(horizontal = rowPadH, vertical = 20.dp)) }
                 items(results, key = { it.first.id }) { (d, snippet) ->
-                    Column(Modifier.fillMaxWidth().noRippleClickable { nav.push(Screen.DocView(d.id)) }.padding(horizontal = rowPadH, vertical = 12.dp)) {
+                    val interaction = remember { MutableInteractionSource() }
+                    Column(Modifier.fillMaxWidth().tileCard(pressedTile(interaction)).clickable(interactionSource = interaction, indication = null) { nav.push(Screen.DocView(d.id)) }
+                        .padding(horizontal = if (colors.tiles) rowPadH - tileGap else rowPadH, vertical = 12.dp)) {
                         T(d.name ?: whenLabel(context, d.created), size = LocalTypo.current.title, maxLines = 1)
                         Small(snippet ?: whenLabel(context, d.created), maxLines = 3)
                     }

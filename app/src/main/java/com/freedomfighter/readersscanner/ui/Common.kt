@@ -6,6 +6,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +30,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -86,9 +91,10 @@ fun T(
 fun Small(text: String, modifier: Modifier = Modifier, color: Color = LocalColors.current.dim, maxLines: Int = 2, align: TextAlign = LocalTypo.current.textAlign) =
     T(text, modifier, size = LocalTypo.current.small, color = color, maxLines = maxLines, align = align)
 
-/** Hairline rule in the foreground colour. */
+/** Hairline rule in the foreground colour; with tiles, the rows are set apart by space instead. */
 @Composable
 fun Rule(modifier: Modifier = Modifier, color: Color = LocalColors.current.rule) {
+    if (LocalColors.current.tiles) { Spacer(modifier.height(4.dp)); return }
     val c = color
     Canvas(modifier.fillMaxWidth().height(1.dp)) { drawRect(c) }
 }
@@ -96,6 +102,29 @@ fun Rule(modifier: Modifier = Modifier, color: Color = LocalColors.current.rule)
 /** Padding used by every text row. */
 val rowPadH = 28.dp
 val rowPadV = 20.dp
+
+/** Tiles: the margin around a card, its inner padding, its corner. */
+val tileGap = 12.dp
+val tileCorner = 18.dp
+
+/** True inside a sheet or a card: the rows in it are flat, the card is the surface. */
+val LocalInTile = compositionLocalOf { false }
+
+/**
+ * The card of a hand-made tappable block (not a TextRow): margin, rounded corners, surface; nothing
+ * in the inks. [horizontal] narrows the margin for cells side by side (a grid, a row of buttons).
+ */
+@Composable
+fun Modifier.tileCard(bg: Color = LocalColors.current.tile, vertical: Dp = 4.dp, horizontal: Dp = tileGap): Modifier =
+    if (LocalColors.current.tiles && !LocalInTile.current) this.padding(horizontal = horizontal, vertical = vertical).clip(RoundedCornerShape(tileCorner)).background(bg) else this
+
+/** The press colour of a card under the finger, from the source its clickable was given. */
+@Composable
+fun pressedTile(interaction: MutableInteractionSource): Color {
+    val pressed by interaction.collectIsPressedAsState()
+    val colors = LocalColors.current
+    return if (pressed) colors.press else colors.tile
+}
 
 fun Modifier.noRippleClickable(enabled: Boolean = true, onClick: () -> Unit): Modifier = this.then(
     Modifier.clickable(
@@ -118,15 +147,27 @@ fun TextRow(
     onClick: (() -> Unit)? = null
 ) {
     val colors = LocalColors.current
-    val bg = if (inverted) colors.accent else Color.Transparent
+    val tiles = colors.tiles
+    val inTile = LocalInTile.current
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val bg = when {
+        inverted -> colors.accent
+        tiles && pressed && onClick != null -> colors.press
+        tiles && !inTile -> colors.tile
+        else -> Color.Transparent
+    }
     val fg = color ?: if (inverted) colors.onAccent else colors.fg
     val dim = if (inverted) colors.onAccent.copy(alpha = 0.6f) else (color?.copy(alpha = 0.6f) ?: colors.dim)
+    // a card: outer margin, rounded, then the same text inset as the page's free text
+    val shape = if (tiles) Modifier.padding(horizontal = if (inTile) 0.dp else tileGap, vertical = if (inTile) 0.dp else 4.dp).clip(RoundedCornerShape(if (inTile) 0.dp else tileCorner)) else Modifier
     Column(
         modifier
             .fillMaxWidth()
+            .then(shape)
             .background(bg)
-            .then(if (onClick != null) Modifier.noRippleClickable(onClick = onClick) else Modifier)
-            .padding(horizontal = rowPadH, vertical = rowPadV * 0.7f)
+            .then(if (onClick != null) Modifier.clickable(interactionSource = interaction, indication = null, onClick = onClick) else Modifier)
+            .padding(horizontal = if (tiles && !inTile) rowPadH - tileGap else rowPadH, vertical = rowPadV * 0.7f)
     ) {
         T(text, size = size, color = fg, maxLines = 1)
         if (secondary != null) Small(secondary, color = dim, maxLines = 1)
@@ -214,15 +255,18 @@ fun TextMenu(title: String?, items: List<MenuItem>, onDismiss: () -> Unit, foote
             .background(colors.bg.copy(alpha = 0.6f))
             .noRippleClickable(onClick = onDismiss)
     ) {
+        val tiles = colors.tiles
+        CompositionLocalProvider(LocalInTile provides true) {
         Column(
             Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .background(colors.bg)
+                .then(if (tiles) Modifier.padding(horizontal = tileGap).clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)) else Modifier)
+                .background(if (tiles) colors.tile else colors.bg)
                 .noRippleClickable { }
                 .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
-            Rule(color = colors.fg)
+            if (tiles) Spacer(Modifier.height(10.dp)) else Rule(color = colors.fg)
             if (title != null) {
                 Small(title, Modifier.padding(horizontal = rowPadH).padding(top = 14.dp, bottom = 2.dp), maxLines = 1)
             }
@@ -235,7 +279,9 @@ fun TextMenu(title: String?, items: List<MenuItem>, onDismiss: () -> Unit, foote
                     })
                 }
                 if (footer.isNotEmpty()) {
-                    Rule(Modifier.padding(vertical = 6.dp))
+                    // tiles: a hairline in the pressed colour, where the inks draw a rule
+                    if (tiles) { if (items.isNotEmpty()) Canvas(Modifier.fillMaxWidth().padding(horizontal = rowPadH, vertical = 6.dp).height(1.dp)) { drawRect(colors.press) } }
+                    else Rule(Modifier.padding(vertical = 6.dp))
                     footer.forEach { item ->
                         TextRow(item.label, secondary = item.secondary, size = LocalTypo.current.title, onClick = {
                             item.action()
@@ -243,8 +289,9 @@ fun TextMenu(title: String?, items: List<MenuItem>, onDismiss: () -> Unit, foote
                         })
                     }
                 }
+                Spacer(Modifier.height(8.dp))
             }
-            Spacer(Modifier.height(8.dp))
+        }
         }
     }
 }
@@ -280,14 +327,17 @@ fun TextPrompt(
             .windowInsetsPadding(WindowInsets.navigationBars)
             .imePadding()
     ) {
+        val tiles = colors.tiles
+        CompositionLocalProvider(LocalInTile provides true) {
         Column(
             Modifier
                 .align(Alignment.Center)
                 .fillMaxWidth()
-                .background(colors.bg)
+                .then(if (tiles) Modifier.padding(horizontal = tileGap).clip(RoundedCornerShape(28.dp)) else Modifier)
+                .background(if (tiles) colors.tile else colors.bg)
                 .noRippleClickable { }
         ) {
-            Rule(color = colors.fg)
+            if (tiles) Spacer(Modifier.height(10.dp)) else Rule(color = colors.fg)
             Small(title, Modifier.padding(horizontal = rowPadH).padding(top = 14.dp), maxLines = 3)
             BasicTextField(
                 value = value,
@@ -309,7 +359,8 @@ fun TextPrompt(
                 Box(Modifier.weight(1f)) { TextRow(stringResource(R.string.action_cancel), onClick = onCancel) }
                 Box(Modifier.weight(1f)) { TextRow(confirm, inverted = ok, onClick = { done() }) }
             }
-            Rule(color = colors.fg)
+            if (tiles) Spacer(Modifier.height(6.dp)) else Rule(color = colors.fg)
+        }
         }
     }
 }
@@ -353,8 +404,8 @@ fun VSpace(h: Dp) = Spacer(Modifier.height(h))
 
 /** Tap and long press on the same row, without ripple. */
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
-fun Modifier.pressable(onClick: () -> Unit, onLongPress: () -> Unit): Modifier = this.then(
-    Modifier.combinedClickable(interactionSource = MutableInteractionSource(), indication = null, onLongClick = onLongPress, onClick = onClick)
+fun Modifier.pressable(onClick: () -> Unit, onLongPress: () -> Unit, interaction: MutableInteractionSource = MutableInteractionSource()): Modifier = this.then(
+    Modifier.combinedClickable(interactionSource = interaction, indication = null, onLongClick = onLongPress, onClick = onClick)
 )
 
 /** One haptic tick, if enabled. */

@@ -1,5 +1,9 @@
 package com.freedomfighter.readersscanner.ui
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
@@ -211,9 +215,10 @@ fun LanguageChips(app: App, modifier: Modifier = Modifier, dark: Boolean = true)
     Row(modifier.horizontalScroll(rememberScrollState()), verticalAlignment = Alignment.CenterVertically) {
         OcrLanguages.codes.forEach { code ->
             val on = code == s.ocrLanguage
+            val tiles = !dark && colors.tiles
             Box(
-                Modifier.padding(end = 6.dp).background(if (on) accent else Color.Transparent)
-                    .border(1.dp, if (on) accent else fg.copy(alpha = 0.35f))
+                Modifier.padding(end = 6.dp)
+                    .then(if (tiles) Modifier.tileCard(if (on) accent else colors.tile, vertical = 0.dp, horizontal = 0.dp) else Modifier.background(if (on) accent else Color.Transparent).border(1.dp, if (on) accent else fg.copy(alpha = 0.35f)))
                     .noRippleClickable { tick(); app.prefs.setOcrLanguage(code) }
                     .padding(horizontal = 11.dp, vertical = 7.dp)
             ) { T(OcrLanguages.short(code), size = LocalTypo.current.small, color = if (on) onAccent else fg, maxLines = 1) }
@@ -266,7 +271,7 @@ private fun ReviewView(a: ScanActivity, app: App, onCrop: (Draft) -> Unit, onFil
                 PageImage(d, Modifier.fillMaxSize().padding(16.dp))
             }
             Rule()
-            Row(Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = if (colors.tiles) tileGap - 4.dp else 0.dp)) {
                 Cell(stringResource(R.string.crop)) { tick(); onCrop(current) }
                 Cell(stringResource(R.string.turn)) { tick(); current.rotation = (current.rotation + 90) % 360; a.session.rerender(current) }
                 Cell(filterName(current.filter)) {
@@ -277,10 +282,11 @@ private fun ReviewView(a: ScanActivity, app: App, onCrop: (Draft) -> Unit, onFil
             Rule()
             Row(Modifier.fillMaxWidth()) {
                 Box(Modifier.weight(1f)) { TextRow("+ " + stringResource(R.string.page), size = LocalTypo.current.title) { tick(); a.toCamera() } }
-                Box(Modifier.weight(1f).background(if (a.session.allReady) colors.accent else colors.rule).noRippleClickable(enabled = a.session.allReady) {
+                val saveBg = if (a.session.allReady) colors.accent else colors.rule
+                Box(Modifier.weight(1f).tileCard(saveBg).background(saveBg).noRippleClickable(enabled = a.session.allReady) {
                     tick()
                     if (a.docId != null) a.file(null, null) else onFile()
-                }.padding(horizontal = rowPadH, vertical = rowPadV * 0.7f)) {
+                }.padding(horizontal = if (colors.tiles) rowPadH - tileGap else rowPadH, vertical = rowPadV * 0.7f)) {
                     T(stringResource(if (a.session.allReady) R.string.save else R.string.working), size = LocalTypo.current.title, color = if (a.session.allReady) colors.onAccent else colors.bg, maxLines = 1)
                 }
             }
@@ -304,7 +310,8 @@ private fun ReviewView(a: ScanActivity, app: App, onCrop: (Draft) -> Unit, onFil
 
 @Composable
 private fun androidx.compose.foundation.layout.RowScope.Cell(label: String, onClick: () -> Unit) {
-    Box(Modifier.weight(1f).noRippleClickable(onClick = onClick).padding(vertical = 18.dp), contentAlignment = Alignment.Center) {
+    val interaction = remember { MutableInteractionSource() }
+    Box(Modifier.weight(1f).tileCard(pressedTile(interaction), horizontal = 4.dp).clickable(interactionSource = interaction, indication = null, onClick = onClick).padding(vertical = 18.dp), contentAlignment = Alignment.Center) {
         T(label, size = LocalTypo.current.small * 1.15f, align = TextAlign.Center, maxLines = 1)
     }
 }
@@ -476,8 +483,12 @@ private fun FileSheet(a: ScanActivity, onDismiss: () -> Unit) {
         Modifier.fillMaxSize().background(colors.bg.copy(alpha = 0.6f)).noRippleClickable(onClick = onDismiss)
             .windowInsetsPadding(WindowInsets.statusBars).windowInsetsPadding(WindowInsets.navigationBars).imePadding()
     ) {
-        Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().background(colors.bg).noRippleClickable { }) {
-            Rule(color = colors.fg)
+        val tiles = colors.tiles
+        CompositionLocalProvider(LocalInTile provides true) {
+        Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+            .then(if (tiles) Modifier.padding(horizontal = tileGap).clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)) else Modifier)
+            .background(if (tiles) colors.tile else colors.bg).noRippleClickable { }) {
+            if (tiles) Spacer8() else Rule(color = colors.fg)
             Small(stringResource(R.string.name_optional), Modifier.padding(horizontal = rowPadH).padding(top = 14.dp))
             ReaderTextField(
                 value = name, onValueChange = { name = it },
@@ -498,6 +509,7 @@ private fun FileSheet(a: ScanActivity, onDismiss: () -> Unit) {
                 TextRow("+  " + stringResource(R.string.new_folder), size = LocalTypo.current.title) { newFolder = true }
             }
             Spacer8()
+        }
         }
     }
     if (newFolder) TextPrompt(stringResource(R.string.new_folder_name), capitalize = true, onDone = { n -> val f = Store.addFolder(n); newFolder = false; a.file(f.id, name) }, onCancel = { newFolder = false })
