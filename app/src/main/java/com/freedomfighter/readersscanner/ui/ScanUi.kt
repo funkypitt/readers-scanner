@@ -271,23 +271,27 @@ private fun ReviewView(a: ScanActivity, app: App, onCrop: (Draft) -> Unit, onFil
                 PageImage(d, Modifier.fillMaxSize().padding(16.dp))
             }
             Rule()
-            Row(Modifier.fillMaxWidth().padding(horizontal = if (colors.tiles) tileGap - 4.dp else 0.dp)) {
-                Cell(stringResource(R.string.crop)) { tick(); onCrop(current) }
-                Cell(stringResource(R.string.turn)) { tick(); current.rotation = (current.rotation + 90) % 360; a.session.rerender(current) }
-                Cell(filterName(current.filter)) {
-                    tick(); current.filter = Filter.entries[(current.filter.ordinal + 1) % Filter.entries.size]; a.session.rerender(current)
+            Row(Modifier.fillMaxWidth()) {
+                Side(end = false) { Cell(stringResource(R.string.crop)) { tick(); onCrop(current) } }
+                Side(start = false, end = false) { Cell(stringResource(R.string.turn)) { tick(); current.rotation = (current.rotation + 90) % 360; a.session.rerender(current) } }
+                Side(start = false, end = false) {
+                    Cell(filterName(current.filter)) {
+                        tick(); current.filter = Filter.entries[(current.filter.ordinal + 1) % Filter.entries.size]; a.session.rerender(current)
+                    }
                 }
-                Cell("⋯") { menu = true }
+                Side(start = false) { Cell("⋯") { menu = true } }
             }
             Rule()
             Row(Modifier.fillMaxWidth()) {
-                Box(Modifier.weight(1f)) { TextRow("+ " + stringResource(R.string.page), size = LocalTypo.current.title) { tick(); a.toCamera() } }
+                Box(Modifier.weight(1f)) { Side(end = false) { TextRow("+ " + stringResource(R.string.page), size = LocalTypo.current.title) { tick(); a.toCamera() } } }
                 val saveBg = if (a.session.allReady) colors.accent else colors.rule
-                Box(Modifier.weight(1f).tileCard(saveBg).background(saveBg).noRippleClickable(enabled = a.session.allReady) {
-                    tick()
-                    if (a.docId != null) a.file(null, null) else onFile()
-                }.padding(horizontal = if (colors.tiles) rowPadH - tileGap else rowPadH, vertical = rowPadV * 0.7f)) {
-                    T(stringResource(if (a.session.allReady) R.string.save else R.string.working), size = LocalTypo.current.title, color = if (a.session.allReady) colors.onAccent else colors.bg, maxLines = 1)
+                Side(start = false) {
+                    Box(Modifier.weight(1f).tileCard(saveBg).background(saveBg).noRippleClickable(enabled = a.session.allReady) {
+                        tick()
+                        if (a.docId != null) a.file(null, null) else onFile()
+                    }.padding(horizontal = if (colors.tiles) rowPadH - tileGap else rowPadH, vertical = rowPadV * 0.7f)) {
+                        T(stringResource(if (a.session.allReady) R.string.save else R.string.working), size = LocalTypo.current.title, color = if (a.session.allReady) colors.onAccent else colors.bg, maxLines = 1)
+                    }
                 }
             }
             Box(Modifier.windowInsetsPadding(WindowInsets.navigationBars))
@@ -311,7 +315,7 @@ private fun ReviewView(a: ScanActivity, app: App, onCrop: (Draft) -> Unit, onFil
 @Composable
 private fun androidx.compose.foundation.layout.RowScope.Cell(label: String, onClick: () -> Unit) {
     val interaction = remember { MutableInteractionSource() }
-    Box(Modifier.weight(1f).tileCard(pressedTile(interaction), horizontal = 4.dp).clickable(interactionSource = interaction, indication = null, onClick = onClick).padding(vertical = 18.dp), contentAlignment = Alignment.Center) {
+    Box(Modifier.weight(1f).tileCard(pressedTile(interaction)).clickable(interactionSource = interaction, indication = null, onClick = onClick).padding(vertical = 18.dp), contentAlignment = Alignment.Center) {
         T(label, size = LocalTypo.current.small * 1.15f, align = TextAlign.Center, maxLines = 1)
     }
 }
@@ -436,6 +440,8 @@ private fun CropView(a: ScanActivity, d: Draft, onClose: () -> Unit) {
                     }
                 }
             }
+            // The crop screen is white text on black whatever the theme: no cards here.
+            CompositionLocalProvider(LocalInTile provides true) {
             Row(Modifier.fillMaxWidth()) {
                 Box(Modifier.weight(1f)) {
                     TextRow(stringResource(R.string.whole_photo), size = LocalTypo.current.small * 1.15f, color = Color.White) { tick(); notFound = false; q.value = Imaging.WHOLE.copyOf() }
@@ -455,6 +461,7 @@ private fun CropView(a: ScanActivity, d: Draft, onClose: () -> Unit) {
                     if (!q.value.contentEquals(d.quad)) { d.quad = q.value.copyOf(); a.session.rerender(d) }
                     onClose()
                 }.padding(horizontal = rowPadH, vertical = rowPadV * 0.7f)) { T(stringResource(R.string.action_ok), color = Color.Black, maxLines = 1) }
+            }
             }
         }
     }

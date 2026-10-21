@@ -336,11 +336,12 @@ fun FolderScreen(nav: Nav, app: App, folder: String?) {
             if (choosing) {
                 val tick = rememberTick()
                 Rule()
+                val more = selected.size == 1
                 Row(Modifier.fillMaxWidth()) {
-                    Box(Modifier.weight(1f)) { TextRow(stringResource(R.string.share), size = LocalTypo.current.small * 1.15f) { tick(); sharing = true } }
-                    Box(Modifier.weight(1f)) { TextRow(stringResource(R.string.move), size = LocalTypo.current.small * 1.15f) { tick(); moving = true } }
-                    Box(Modifier.weight(1f)) { TextRow(stringResource(R.string.delete), size = LocalTypo.current.small * 1.15f) { tick(); deleting = true } }
-                    if (selected.size == 1) Box(Modifier.weight(0.5f)) { TextRow("⋯", size = LocalTypo.current.small * 1.15f) { menuFor = Store.doc(selected[0]) } }
+                    Box(Modifier.weight(1f)) { Side(end = false) { TextRow(stringResource(R.string.share), size = LocalTypo.current.small * 1.15f) { tick(); sharing = true } } }
+                    Box(Modifier.weight(1f)) { Side(start = false, end = false) { TextRow(stringResource(R.string.move), size = LocalTypo.current.small * 1.15f) { tick(); moving = true } } }
+                    Box(Modifier.weight(1f)) { Side(start = false, end = !more) { TextRow(stringResource(R.string.delete), size = LocalTypo.current.small * 1.15f) { tick(); deleting = true } } }
+                    if (more) Box(Modifier.weight(0.5f)) { Side(start = false) { TextRow("⋯", size = LocalTypo.current.small * 1.15f) { menuFor = Store.doc(selected[0]) } } }
                 }
                 Box(Modifier.windowInsetsPadding(WindowInsets.navigationBars))
             } else NewScanButton { ScanActivity.start(context, folder = folder) }
@@ -561,10 +562,11 @@ fun DocScreen(nav: Nav, app: App, id: String) {
                 item { VSpace(16.dp) }
             }
             Rule()
+            val addPage = !d.remote
             Row(Modifier.fillMaxWidth()) {
-                Box(Modifier.weight(1f)) { TextRow(stringResource(R.string.share), size = LocalTypo.current.small * 1.15f) { tick(); sharing = true } }
-                Box(Modifier.weight(1f)) { TextRow(stringResource(if (showText) R.string.pages else R.string.text), size = LocalTypo.current.small * 1.15f) { tick(); showText = !showText } }
-                if (!d.remote) Box(Modifier.weight(1f)) { TextRow("+ " + stringResource(R.string.page), size = LocalTypo.current.small * 1.15f) { tick(); ScanActivity.start(context, doc = d.id) } }
+                Box(Modifier.weight(1f)) { Side(end = false) { TextRow(stringResource(R.string.share), size = LocalTypo.current.small * 1.15f) { tick(); sharing = true } } }
+                Box(Modifier.weight(1f)) { Side(start = false, end = !addPage) { TextRow(stringResource(if (showText) R.string.pages else R.string.text), size = LocalTypo.current.small * 1.15f) { tick(); showText = !showText } } }
+                if (addPage) Box(Modifier.weight(1f)) { Side(start = false) { TextRow("+ " + stringResource(R.string.page), size = LocalTypo.current.small * 1.15f) { tick(); ScanActivity.start(context, doc = d.id) } } }
             }
             Box(Modifier.windowInsetsPadding(WindowInsets.navigationBars))
         }

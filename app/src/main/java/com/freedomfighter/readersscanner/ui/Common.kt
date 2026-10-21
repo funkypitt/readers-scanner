@@ -12,6 +12,9 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -50,6 +53,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.freedomfighter.readersscanner.R
@@ -110,13 +114,35 @@ val tileCorner = 18.dp
 /** True inside a sheet or a card: the rows in it are flat, the card is the surface. */
 val LocalInTile = compositionLocalOf { false }
 
+/** Cards side by side: a card drops half of its page margin on the side it shares with a neighbour. */
+data class CardEdges(val start: Boolean = true, val end: Boolean = true)
+val LocalCardEdges = compositionLocalOf { CardEdges() }
+
+/** Wrap each card of a row: the first one with `end = false`, the last with `start = false`, the middle ones with both false. */
+@Composable
+fun Side(start: Boolean = true, end: Boolean = true, content: @Composable () -> Unit) =
+    CompositionLocalProvider(LocalCardEdges provides CardEdges(start, end), content = content)
+
+/** The horizontal margins of a card on the page: full at the page edge, half towards a neighbour. */
+@Composable
+fun cardMargins(): PaddingValues {
+    val e = LocalCardEdges.current
+    return PaddingValues(start = if (e.start) tileGap else tileGap / 2, end = if (e.end) tileGap else tileGap / 2)
+}
+
 /**
  * The card of a hand-made tappable block (not a TextRow): margin, rounded corners, surface; nothing
- * in the inks. [horizontal] narrows the margin for cells side by side (a grid, a row of buttons).
+ * in the inks. The side margins come from [cardMargins] (half towards a neighbour, see [Side]);
+ * [horizontal] overrides both for the cells of a grid or the pills of a chip row.
  */
 @Composable
-fun Modifier.tileCard(bg: Color = LocalColors.current.tile, vertical: Dp = 4.dp, horizontal: Dp = tileGap): Modifier =
-    if (LocalColors.current.tiles && !LocalInTile.current) this.padding(horizontal = horizontal, vertical = vertical).clip(RoundedCornerShape(tileCorner)).background(bg) else this
+fun Modifier.tileCard(bg: Color = LocalColors.current.tile, vertical: Dp = 4.dp, horizontal: Dp? = null): Modifier {
+    if (!LocalColors.current.tiles || LocalInTile.current) return this
+    val m = cardMargins()
+    val start = horizontal ?: m.calculateStartPadding(LayoutDirection.Ltr)
+    val end = horizontal ?: m.calculateEndPadding(LayoutDirection.Ltr)
+    return this.padding(start = start, end = end, top = vertical, bottom = vertical).clip(RoundedCornerShape(tileCorner)).background(bg)
+}
 
 /** The press colour of a card under the finger, from the source its clickable was given. */
 @Composable
@@ -160,7 +186,12 @@ fun TextRow(
     val fg = color ?: if (inverted) colors.onAccent else colors.fg
     val dim = if (inverted) colors.onAccent.copy(alpha = 0.6f) else (color?.copy(alpha = 0.6f) ?: colors.dim)
     // a card: outer margin, rounded, then the same text inset as the page's free text
-    val shape = if (tiles) Modifier.padding(horizontal = if (inTile) 0.dp else tileGap, vertical = if (inTile) 0.dp else 4.dp).clip(RoundedCornerShape(if (inTile) 0.dp else tileCorner)) else Modifier
+    val m = cardMargins()
+    val shape = if (tiles) Modifier.padding(
+        start = if (inTile) 0.dp else m.calculateStartPadding(LayoutDirection.Ltr),
+        end = if (inTile) 0.dp else m.calculateEndPadding(LayoutDirection.Ltr),
+        top = if (inTile) 0.dp else 4.dp, bottom = if (inTile) 0.dp else 4.dp
+    ).clip(RoundedCornerShape(if (inTile) 0.dp else tileCorner)) else Modifier
     Column(
         modifier
             .fillMaxWidth()
