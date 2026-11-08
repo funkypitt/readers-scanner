@@ -1,0 +1,1 @@
+Works with Android 16: the app now targets the latest Android, with transparent system bars throughout.

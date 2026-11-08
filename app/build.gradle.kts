@@ -6,14 +6,14 @@ plugins {
 
 android {
     namespace = "com.freedomfighter.readersscanner"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.freedomfighter.readersscanner"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 11
-        versionName = "1.4.1"
+        targetSdk = 36
+        versionCode = 12
+        versionName = "1.5.0"
         // Phones, and x86_64 for the emulator; -Pabis=arm64-v8a for a phone-only APK.
         ndk { abiFilters += ((project.findProperty("abis") as String?)?.split(",") ?: listOf("arm64-v8a", "armeabi-v7a", "x86_64")) }
     }
