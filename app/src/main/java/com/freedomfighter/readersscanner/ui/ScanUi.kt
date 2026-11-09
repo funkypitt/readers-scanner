@@ -140,7 +140,8 @@ private fun CameraView(a: ScanActivity, app: App, onBack: () -> Unit) {
 
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             if (a.granted) {
-                Box(Modifier.fillMaxWidth().aspectRatio(3f / 4f).noRippleClickable { a.shoot() }) {
+                // 3:4 within the room left: fillMaxWidth would force 1080x1440 even on a short screen and the preview would overflow the rows above and below.
+                Box(Modifier.aspectRatio(3f / 4f).noRippleClickable { a.shoot() }) {
                     a.finder?.let { f -> AndroidView({ f }, Modifier.fillMaxSize()) }
                     val q = a.live
                     Canvas(Modifier.fillMaxSize()) {

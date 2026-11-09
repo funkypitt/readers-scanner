@@ -1,0 +1,1 @@
+On short screens the camera preview no longer covers the language row and the shutter.
